@@ -30,6 +30,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => 
 
   if (isKioskMode) return null;
 
+  const isSuperAdmin = user?.role === 'owner';
+
   const NAV_ITEMS: Array<{ id: ActiveTab; label: string; icon: React.ComponentType<{ className?: string }> }> = [
     { id: 'dashboard', label: 'Dashboards', icon: LayoutDashboard },
     { id: 'devices', label: 'Device Fleet', icon: Cpu },
@@ -37,7 +39,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => 
     { id: 'firmware', label: 'Firmware SDK', icon: Code2 },
     { id: 'rules', label: 'Rule Engine', icon: Sliders },
     { id: 'analytics', label: 'History & Export', icon: FileSpreadsheet },
-    { id: 'users', label: 'User Management', icon: ShieldCheck },
+    ...(isSuperAdmin ? [{ id: 'users' as ActiveTab, label: 'User Management', icon: ShieldCheck }] : []),
     { id: 'api_docs', label: 'API & MQTT Docs', icon: Terminal },
   ];
 

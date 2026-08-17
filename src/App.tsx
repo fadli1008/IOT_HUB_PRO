@@ -13,7 +13,7 @@ import { UserManagementView } from './components/admin/UserManagementView';
 import { ApiPlayground } from './components/api-docs/ApiPlayground';
 
 export const App: React.FC = () => {
-  const { isAuthenticated, onboarding } = useAuth();
+  const { user, isAuthenticated, onboarding } = useAuth();
   const [activeTab, setActiveTab] = useState<ActiveTab>('dashboard');
 
   // If user is not authenticated, show Public Landing Page + Gated Sign-Up / Login
@@ -38,7 +38,7 @@ export const App: React.FC = () => {
         {activeTab === 'firmware' && <FirmwareGenerator />}
         {activeTab === 'rules' && <RuleEngine />}
         {activeTab === 'analytics' && <HistoricalExportView />}
-        {activeTab === 'users' && <UserManagementView />}
+        {activeTab === 'users' && (user?.role === 'owner' ? <UserManagementView /> : <DashboardCanvas />)}
         {activeTab === 'api_docs' && <ApiPlayground />}
       </main>
     </div>
