@@ -31,6 +31,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMo
   const [password, setPassword] = useState('');
   const [otpCode, setOtpCode] = useState('');
   const [customSocialEmail, setCustomSocialEmail] = useState('');
+  const [customGithubUser, setCustomGithubUser] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
@@ -69,10 +70,14 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMo
   };
 
   const handleOAuthConfirm = async (selectedEmail: string, selectedName: string) => {
+    if (!selectedEmail) {
+      setError('Silakan masukkan alamat email atau username Anda.');
+      return;
+    }
     setIsLoading(true);
     setError('');
     try {
-      // Simulate real OAuth network handshake
+      // Simulate authentic OAuth network handshake
       await new Promise(resolve => setTimeout(resolve, 800));
       await login(selectedEmail, 'oauth_social_token');
       onClose();
@@ -98,7 +103,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMo
         </button>
 
         {/* ============================================================== */}
-        {/* VIEW 1: GOOGLE OAUTH 2.0 CONSENT SCREEN */}
+        {/* VIEW 1: GOOGLE OAUTH LOGIN MODAL */}
         {/* ============================================================== */}
         {mode === 'oauth_google' && (
           <div className="space-y-5 animate-fadeIn">
@@ -111,68 +116,69 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMo
                   <path fill="#34A853" d="M12 23c3.2 0 6-1.1 8-3l-3.7-2.9c-1.1.7-2.5 1.2-4.3 1.2-3 0-5.5-2.3-6.4-5.2L1.9 16C3.7 19.7 7.5 23 12 23z" />
                 </svg>
               </div>
-              <h2 className="text-xl font-bold font-heading text-white">Masuk dengan Google</h2>
-              <p className="text-xs text-gray-400 mt-1">Pilih akun Google Anda untuk melanjutkan ke <strong>IoT Hub Pro</strong></p>
+              <h2 className="text-xl font-bold font-heading text-white">Login dengan Google</h2>
+              <p className="text-xs text-gray-400 mt-1">Masukkan alamat akun Google Anda untuk melanjutkan</p>
             </div>
 
-            <div className="space-y-2.5">
-              {/* Account 1: Muhamad Fadli */}
-              <button
-                disabled={isLoading}
-                onClick={() => handleOAuthConfirm('muhamad.fadli@gmail.com', 'Muhamad Fadli')}
-                className="w-full flex items-center justify-between p-3.5 rounded-2xl bg-gray-950/80 hover:bg-gray-800 border border-gray-800 transition text-left group"
-              >
-                <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-brand-500 to-blue-600 flex items-center justify-center text-black font-bold text-sm">
-                    MF
-                  </div>
-                  <div>
-                    <div className="text-xs font-bold text-white group-hover:text-brand-400 transition">Muhamad Fadli</div>
-                    <div className="text-[11px] text-gray-400 font-mono">muhamad.fadli@gmail.com</div>
-                  </div>
-                </div>
-                <ChevronRight className="w-4 h-4 text-gray-500 group-hover:text-white" />
-              </button>
+            {error && (
+              <div className="p-3 bg-red-500/10 border border-red-500/30 text-red-400 text-xs rounded-xl text-center">
+                {error}
+              </div>
+            )}
 
-              {/* Custom Google Email Input */}
-              <div className="p-3.5 rounded-2xl bg-gray-950/50 border border-gray-800/80 space-y-2">
-                <label className="text-[11px] text-gray-400 font-medium block">Gunakan Akun Google Lain:</label>
-                <div className="flex space-x-2">
+            <div className="space-y-4">
+              <div>
+                <label className="text-[11px] text-gray-400 font-medium block mb-1">Email Google Anda</label>
+                <div className="relative">
+                  <Mail className="w-4 h-4 text-gray-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
                   <input
                     type="email"
+                    required
+                    autoFocus
                     placeholder="nama.anda@gmail.com"
                     value={customSocialEmail}
                     onChange={e => setCustomSocialEmail(e.target.value)}
-                    className="flex-1 bg-gray-900 border border-gray-700 text-gray-200 text-xs rounded-xl px-3 py-2 focus:outline-none focus:border-brand-500 font-mono"
+                    className="w-full bg-gray-950 border border-gray-800 text-gray-100 text-xs rounded-xl pl-10 pr-4 py-2.5 focus:outline-none focus:border-brand-500 font-mono"
                   />
-                  <button
-                    disabled={isLoading || !customSocialEmail}
-                    onClick={() => handleOAuthConfirm(customSocialEmail, customSocialEmail.split('@')[0])}
-                    className="px-3.5 py-2 bg-brand-500 hover:bg-brand-400 disabled:opacity-40 text-black font-bold text-xs rounded-xl transition"
-                  >
-                    {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Pilih'}
-                  </button>
                 </div>
               </div>
+
+              <div className="p-3 rounded-xl bg-gray-950/40 border border-gray-800 text-[11px] text-gray-500 space-y-1">
+                <p>🔒 <strong>Izin Akses:</strong> Menghubungkan profil Google Anda secara aman ke dashboard IoT Hub Pro.</p>
+              </div>
+
+              <button
+                disabled={isLoading}
+                onClick={() => handleOAuthConfirm(customSocialEmail, customSocialEmail.split('@')[0])}
+                className="w-full py-3 bg-brand-500 hover:bg-brand-400 text-black font-bold text-xs rounded-xl shadow-lg glow-cyan transition flex items-center justify-center space-x-2 font-mono"
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>Mengautentikasi Google...</span>
+                  </>
+                ) : (
+                  <>
+                    <span>Lanjutkan dengan Akun Google</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </>
+                )}
+              </button>
             </div>
 
-            <div className="p-3 rounded-xl bg-gray-950/40 border border-gray-800 text-[11px] text-gray-500 space-y-1">
-              <p>🔒 <strong>Izin Akses:</strong> IoT Hub Pro akan melihat nama, alamat email, dan setelan bahasa akun Google Anda.</p>
-            </div>
-
-            <div className="flex items-center justify-between text-xs pt-2">
+            <div className="text-center pt-2">
               <button
                 onClick={() => setMode('login')}
-                className="text-gray-400 hover:text-white transition"
+                className="text-xs text-gray-400 hover:text-white transition"
               >
-                ← Batal & Kembali
+                ← Batal & Kembali ke Login Biasa
               </button>
             </div>
           </div>
         )}
 
         {/* ============================================================== */}
-        {/* VIEW 2: GITHUB OAUTH 2.0 AUTHORIZATION SCREEN */}
+        {/* VIEW 2: GITHUB OAUTH LOGIN MODAL */}
         {/* ============================================================== */}
         {mode === 'oauth_github' && (
           <div className="space-y-5 animate-fadeIn">
@@ -180,59 +186,65 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMo
               <div className="inline-flex items-center justify-center p-3 rounded-2xl bg-gray-800 mb-2 text-white">
                 <Github className="w-8 h-8" />
               </div>
-              <h2 className="text-xl font-bold font-heading text-white">Authorize IoT Hub Pro</h2>
-              <p className="text-xs text-gray-400 mt-1">oleh <strong>Muhamad Fadli (@fadli1008)</strong></p>
+              <h2 className="text-xl font-bold font-heading text-white">Login dengan GitHub</h2>
+              <p className="text-xs text-gray-400 mt-1">Masukkan username atau email GitHub Anda</p>
             </div>
 
-            <div className="p-4 rounded-2xl bg-gray-950 border border-gray-800 space-y-3">
-              <div className="flex items-center space-x-3 pb-3 border-b border-gray-800">
-                <img
-                  src="https://avatars.githubusercontent.com/u/fadli1008"
-                  onError={(e) => {
-                    (e.target as any).src = 'https://api.dicebear.com/7.x/identicon/svg?seed=fadli1008';
-                  }}
-                  alt="GitHub Profile"
-                  className="w-10 h-10 rounded-full border border-gray-700 bg-gray-800"
-                />
-                <div>
-                  <div className="text-xs font-bold text-white">Muhamad Fadli</div>
-                  <div className="text-[11px] text-brand-400 font-mono">@fadli1008 (GitHub)</div>
+            {error && (
+              <div className="p-3 bg-red-500/10 border border-red-500/30 text-red-400 text-xs rounded-xl text-center">
+                {error}
+              </div>
+            )}
+
+            <div className="space-y-4">
+              <div>
+                <label className="text-[11px] text-gray-400 font-medium block mb-1">Username atau Email GitHub</label>
+                <div className="relative">
+                  <User className="w-4 h-4 text-gray-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                  <input
+                    type="text"
+                    required
+                    autoFocus
+                    placeholder="e.g. username_github"
+                    value={customGithubUser}
+                    onChange={e => setCustomGithubUser(e.target.value)}
+                    className="w-full bg-gray-950 border border-gray-800 text-gray-100 text-xs rounded-xl pl-10 pr-4 py-2.5 focus:outline-none focus:border-brand-500 font-mono"
+                  />
                 </div>
               </div>
 
-              <div className="text-xs text-gray-300 space-y-2">
-                <div className="text-[11px] text-gray-400 font-semibold uppercase">Izin yang Diminta (OAuth Scopes):</div>
-                <ul className="space-y-1.5 text-[11px] text-gray-400 list-disc list-inside">
-                  <li>Akses data profil publik pengguna</li>
-                  <li>Verifikasi alamat email utama (<code>user:email</code>)</li>
-                </ul>
+              <div className="p-3 rounded-xl bg-gray-950/40 border border-gray-800 text-[11px] text-gray-500 space-y-1">
+                <p>🔒 <strong>Izin Akses:</strong> Autentikasi identitas developer melalui akun GitHub publik.</p>
               </div>
-            </div>
 
-            <div className="space-y-2 pt-2">
               <button
                 disabled={isLoading}
-                onClick={() => handleOAuthConfirm('fadli@github.com', 'Muhamad Fadli (@fadli1008)')}
-                className="w-full py-3 bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-xs rounded-xl shadow-lg glow-green transition flex items-center justify-center space-x-2"
+                onClick={() => {
+                  const emailOrUser = customGithubUser.includes('@') ? customGithubUser : `${customGithubUser}@github.com`;
+                  handleOAuthConfirm(emailOrUser, customGithubUser);
+                }}
+                className="w-full py-3 bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-xs rounded-xl shadow-lg glow-green transition flex items-center justify-center space-x-2 font-mono"
               >
                 {isLoading ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin" />
-                    <span>Menghubungkan ke GitHub...</span>
+                    <span>Mengautentikasi GitHub...</span>
                   </>
                 ) : (
                   <>
                     <Github className="w-4 h-4" />
-                    <span>Authorize & Masuk sebagai @fadli1008</span>
+                    <span>Authorize & Masuk dengan GitHub</span>
                   </>
                 )}
               </button>
+            </div>
 
+            <div className="text-center pt-2">
               <button
                 onClick={() => setMode('login')}
-                className="w-full py-2.5 text-xs text-gray-400 hover:text-white transition text-center"
+                className="text-xs text-gray-400 hover:text-white transition"
               >
-                Batal
+                ← Batal & Kembali ke Login Biasa
               </button>
             </div>
           </div>
@@ -275,7 +287,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMo
                     <input
                       type="text"
                       required
-                      placeholder="e.g. Muhamad Fadli"
+                      placeholder="e.g. Budi Santoso"
                       value={name}
                       onChange={e => setName(e.target.value)}
                       className="w-full bg-gray-950 border border-gray-800 text-gray-100 text-xs rounded-xl pl-10 pr-4 py-2.5 focus:outline-none focus:border-brand-500 font-sans"
@@ -370,7 +382,10 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMo
 
                 <div className="grid grid-cols-2 gap-3">
                   <button
-                    onClick={() => setMode('oauth_google')}
+                    onClick={() => {
+                      setError('');
+                      setMode('oauth_google');
+                    }}
                     className="flex items-center justify-center space-x-2 py-2.5 px-4 bg-gray-950 hover:bg-gray-800 border border-gray-800 rounded-xl text-xs font-semibold text-gray-200 transition"
                   >
                     <svg className="w-4 h-4" viewBox="0 0 24 24">
@@ -383,7 +398,10 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMo
                   </button>
 
                   <button
-                    onClick={() => setMode('oauth_github')}
+                    onClick={() => {
+                      setError('');
+                      setMode('oauth_github');
+                    }}
                     className="flex items-center justify-center space-x-2 py-2.5 px-4 bg-gray-950 hover:bg-gray-800 border border-gray-800 rounded-xl text-xs font-semibold text-gray-200 transition"
                   >
                     <Github className="w-4 h-4" />

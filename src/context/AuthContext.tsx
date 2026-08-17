@@ -22,13 +22,13 @@ interface AuthContextType {
 }
 
 const DEFAULT_ORG: Organization = {
-  id: 'org_fadli_01',
-  name: "Muhamad Fadli's IoT Workspace",
-  slug: 'muhamad-fadli-iot-workspace',
-  plan: 'enterprise',
-  deviceLimit: 500,
-  devicesCount: 8,
-  role: 'owner'
+  id: 'org_default',
+  name: "My IoT Workspace",
+  slug: 'my-iot-workspace',
+  plan: 'free',
+  deviceLimit: 5,
+  devicesCount: 0,
+  role: 'operator'
 };
 
 const INITIAL_SUPER_ADMIN: User = {
@@ -125,6 +125,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         throw new Error('Password salah untuk akun Super Admin. (Default: admin123)');
       }
       setUser(INITIAL_SUPER_ADMIN);
+      setOrganization({
+        id: 'org_super_admin',
+        name: "Muhamad Fadli's Enterprise Hub",
+        slug: 'muhamad-fadli-enterprise',
+        plan: 'enterprise',
+        deviceLimit: 500,
+        devicesCount: 8,
+        role: 'owner'
+      });
       return true;
     }
 
@@ -135,13 +144,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         throw new Error('Akun Anda dinonaktifkan (suspended) oleh Super Admin.');
       }
       setUser({ ...existing, lastLogin: 'Just now' });
+      setOrganization({
+        id: 'org_' + existing.id,
+        name: `${existing.name}'s Workspace`,
+        slug: existing.name.toLowerCase().replace(/\s+/g, '-'),
+        plan: existing.role === 'admin' ? 'pro' : 'free',
+        deviceLimit: existing.deviceLimit || 5,
+        devicesCount: existing.devicesCount || 0,
+        role: existing.role
+      });
       return true;
     }
 
     // 3. New User Registration / Guest Fallback
+    const displayName = email.split('@')[0].toUpperCase();
     const newUser: User = {
       id: 'usr_' + Math.random().toString(36).substring(2, 9),
-      name: email.split('@')[0].toUpperCase(),
+      name: displayName,
       email,
       avatarUrl: `https://api.dicebear.com/7.x/identicon/svg?seed=${email}`,
       role: 'operator',
@@ -155,6 +174,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     setAllUsers(prev => [newUser, ...prev]);
     setUser(newUser);
+    setOrganization({
+      id: 'org_' + newUser.id,
+      name: `${displayName}'s Workspace`,
+      slug: displayName.toLowerCase(),
+      plan: 'free',
+      deviceLimit: 5,
+      devicesCount: 0,
+      role: 'operator'
+    });
     return true;
   };
 
@@ -166,12 +194,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const verifyOtp = async (code: string): Promise<boolean> => {
     if (code.length === 6) {
-      const email = pendingEmail || 'muhamad.fadli@gmail.com';
+      const email = pendingEmail || 'user@iothub.local';
       const isSuper = email.includes('fadli') || email.includes('admin');
+      const displayName = isSuper ? 'Muhamad Fadli' : email.split('@')[0];
 
       const newUser: User = {
         id: 'usr_' + Math.random().toString(36).substring(2, 9),
-        name: isSuper ? 'Muhamad Fadli' : email.split('@')[0],
+        name: displayName,
         email,
         avatarUrl: `https://api.dicebear.com/7.x/identicon/svg?seed=${email}`,
         role: isSuper ? 'owner' : 'operator',
@@ -185,6 +214,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       setAllUsers(prev => [newUser, ...prev.filter(u => u.email !== email)]);
       setUser(newUser);
+      setOrganization({
+        id: 'org_' + newUser.id,
+        name: `${displayName}'s Workspace`,
+        slug: displayName.toLowerCase().replace(/\s+/g, '-'),
+        plan: isSuper ? 'enterprise' : 'free',
+        deviceLimit: isSuper ? 500 : 5,
+        devicesCount: 0,
+        role: isSuper ? 'owner' : 'operator'
+      });
       storage.remove('pendingEmail');
       setPendingEmail(null);
       return true;
@@ -211,6 +249,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const logout = () => {
     setUser(null);
     storage.remove('user');
+    storage.remove('org');
   };
 
   const updateUserRole = (role: UserRole) => {
