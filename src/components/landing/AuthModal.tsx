@@ -393,31 +393,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMo
               </>
             )}
 
-            {/* Super Admin Quick Login Card */}
-            <div className="mt-5 p-3.5 rounded-2xl bg-gradient-to-r from-amber-500/15 via-brand-500/10 to-purple-500/10 border border-amber-500/30 flex items-center justify-between">
-              <div className="flex items-center space-x-2.5">
-                <div className="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center font-bold">
-                  👑
-                </div>
-                <div>
-                  <div className="text-[11px] font-bold text-amber-300">Super Admin Mode (Muhamad Fadli)</div>
-                  <div className="text-[10px] text-gray-400 font-mono">admin@iothub.local</div>
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={() => {
-                  login('admin@iothub.local', 'admin123');
-                  onClose();
-                }}
-                className="px-3 py-1.5 bg-amber-400 hover:bg-amber-300 text-black font-bold text-[11px] rounded-xl shadow-md glow-amber transition font-mono"
-              >
-                1-Click Login
-              </button>
-            </div>
-
             {/* Footer switch */}
-            <div className="mt-5 text-center text-xs text-gray-400">
+            <div className="mt-6 text-center text-xs text-gray-400">
               {mode === 'login' ? (
                 <p>
                   Don't have an account?{' '}

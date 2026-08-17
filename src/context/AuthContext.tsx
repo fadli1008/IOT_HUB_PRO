@@ -117,19 +117,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [onboarding]);
 
   const login = async (email: string, password?: string): Promise<boolean> => {
-    // Check if logging in as Super Admin
-    if (email.toLowerCase().includes('admin') || email.toLowerCase().includes('fadli')) {
+    const cleanEmail = email.trim().toLowerCase();
+
+    // 1. Super Admin Login Authentication
+    if (cleanEmail === 'admin@iothub.local' || cleanEmail === 'fadli@iothub.pro' || cleanEmail === 'muhamad.fadli@gmail.com') {
+      if (password !== 'oauth_social_token' && password !== 'admin123' && password !== 'fadli123' && password !== 'admin') {
+        throw new Error('Password salah untuk akun Super Admin. (Default: admin123)');
+      }
       setUser(INITIAL_SUPER_ADMIN);
       return true;
     }
 
-    const existing = allUsers.find(u => u.email.toLowerCase() === email.toLowerCase());
+    // 2. Existing Registered User Login
+    const existing = allUsers.find(u => u.email.toLowerCase() === cleanEmail);
     if (existing) {
+      if (existing.status === 'suspended') {
+        throw new Error('Akun Anda dinonaktifkan (suspended) oleh Super Admin.');
+      }
       setUser({ ...existing, lastLogin: 'Just now' });
       return true;
     }
 
-    // Default regular user login
+    // 3. New User Registration / Guest Fallback
     const newUser: User = {
       id: 'usr_' + Math.random().toString(36).substring(2, 9),
       name: email.split('@')[0].toUpperCase(),
@@ -140,7 +149,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       createdAt: new Date().toISOString(),
       status: 'active',
       deviceLimit: 5,
-      devicesCount: 1,
+      devicesCount: 0,
       lastLogin: 'Just now'
     };
 
