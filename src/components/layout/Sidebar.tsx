@@ -91,8 +91,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => 
             className="w-8 h-8 rounded-full border border-gray-700 bg-gray-800"
           />
           <div className="flex-1 truncate">
-            <div className="text-xs font-bold text-gray-200 truncate">{user?.name || 'Fadli'}</div>
-            <div className="text-[10px] text-brand-400 font-mono font-semibold truncate">{user?.email || 'fadli@iothub.local'}</div>
+            <div className="text-xs font-bold text-gray-200 truncate">{user?.name || 'Muhamad Fadli'}</div>
+            <div className="text-[10px] text-brand-400 font-mono font-semibold truncate">{user?.email || 'muhamad.fadli@iothub.local'}</div>
           </div>
         </div>
 

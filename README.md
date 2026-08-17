@@ -20,7 +20,7 @@
 ---
 
 ## 👨‍💻 Developer & Pemilik Proyek
-* **Lead Developer & Architect**: **Fadli** ([@fadli1008](https://github.com/fadli1008))
+* **Lead Developer & Architect**: **Muhamad Fadli** ([@fadli1008](https://github.com/fadli1008))
 * **Repository**: [https://github.com/fadli1008/IOT_HUB_PRO](https://github.com/fadli1008/IOT_HUB_PRO)
 
 ---
@@ -236,7 +236,7 @@ IOT_HUB/
 
 <div align="center">
 
-**Dikembangkan dan Dirancang oleh [Fadli](https://github.com/fadli1008)**  
+**Dikembangkan dan Dirancang oleh [Muhamad Fadli](https://github.com/fadli1008)**  
 *Dibuat dengan React 18, Vite, TypeScript & Tailwind CSS • 2026*
 
 </div>

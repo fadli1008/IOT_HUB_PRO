@@ -38,7 +38,7 @@ export const FirmwareGenerator: React.FC = () => {
           code: `/*
  * ============================================================================
  * Project      : IoT Hub ESP32 HTTP REST Client
- * Developer    : Fadli (IoT Hub Lead Architect)
+ * Developer    : Muhamad Fadli (IoT Hub Lead Architect)
  * Protocol     : HTTP REST Ingestion (No MQTT required!)
  * Device Name  : ${currentDevice?.name}
  * Generated At : ${new Date().toISOString()}
@@ -129,7 +129,7 @@ void loop() {
           code: `"""
 ============================================================================
 Project      : IoT Hub Edge Python HTTP Client
-Developer    : Fadli (IoT Hub Lead Architect)
+Developer    : Muhamad Fadli (IoT Hub Lead Architect)
 Protocol     : HTTP REST Ingestion
 Device Name  : ${currentDevice?.name}
 Target Board : Raspberry Pi 4 / Linux SBC
@@ -175,7 +175,7 @@ if __name__ == "__main__":
         return {
           filename: `${currentDevice?.name.toLowerCase().replace(/\s+/g, '_')}_http_mpy.py`,
           code: `# MicroPython HTTP Client for ${currentDevice?.name}
-# Developed by: Fadli (IoT Hub Lead Architect)
+# Developed by: Muhamad Fadli (IoT Hub Lead Architect)
 import time, ujson, urequests, network, machine
 
 WIFI_SSID = "${wifiSsid}"
@@ -216,7 +216,7 @@ while True:
         code: `/*
  * ============================================================================
  * Project      : IoT Hub ESP32 Production Client
- * Developer    : Fadli (IoT Hub Lead Architect)
+ * Developer    : Muhamad Fadli (IoT Hub Lead Architect)
  * Protocol     : MQTT Standard (broker.emqx.io)
  * Device Name  : ${currentDevice?.name}
  * Generated At : ${new Date().toISOString()}
@@ -340,7 +340,7 @@ void loop() {
         code: `"""
 ============================================================================
 Project      : IoT Hub Edge Python Gateway
-Developer    : Fadli (IoT Hub Lead Architect)
+Developer    : Muhamad Fadli (IoT Hub Lead Architect)
 Device Name  : ${currentDevice?.name}
 Target Board : Raspberry Pi 4 / Linux SBC
 ============================================================================
@@ -405,7 +405,7 @@ if __name__ == "__main__":
       return {
         filename: `${currentDevice?.name.toLowerCase().replace(/\s+/g, '_')}_main.py`,
         code: `# MicroPython Client for ${currentDevice?.name}
-# Developed by: Fadli (IoT Hub Lead Architect)
+# Developed by: Muhamad Fadli (IoT Hub Lead Architect)
 import time, ujson, network, machine
 from umqtt.simple import MQTTClient
 

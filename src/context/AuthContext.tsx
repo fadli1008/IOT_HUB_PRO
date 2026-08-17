@@ -18,8 +18,8 @@ interface AuthContextType {
 
 const DEFAULT_ORG: Organization = {
   id: 'org_fadli_01',
-  name: "Fadli's IoT Workspace",
-  slug: 'fadli-iot-workspace',
+  name: "Muhamad Fadli's IoT Workspace",
+  slug: 'muhamad-fadli-iot-workspace',
   plan: 'pro',
   deviceLimit: 250,
   devicesCount: 3,

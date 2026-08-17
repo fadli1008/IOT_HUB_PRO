@@ -1,9 +1,9 @@
 # 📖 Buku Panduan Pengguna (User Manual)
 # **IoT Hub** — Universal & Industrial IoT Platform
-> **Dikembangkan & Dirancang oleh**: **Fadli** (Lead IoT Architect & Developer)  
+> **Dikembangkan & Dirancang oleh**: **Muhamad Fadli** (Lead IoT Architect & Developer)  
 > **Versi**: 1.0.0 Industrial Release
 
-Selamat datang di **IoT Hub**! Platform IoT universal yang dikembangkan oleh **Fadli** untuk memberikan fleksibilitas penuh dalam menghubungkan berbagai perangkat keras custom, menyusun dashboard pemantauan visual secara drag-and-drop, serta mengelola otomasi industri.
+Selamat datang di **IoT Hub**! Platform IoT universal yang dikembangkan oleh **Muhamad Fadli** untuk memberikan fleksibilitas penuh dalam menghubungkan berbagai perangkat keras custom, menyusun dashboard pemantauan visual secara drag-and-drop, serta mengelola otomasi industri.
 
 ---
 

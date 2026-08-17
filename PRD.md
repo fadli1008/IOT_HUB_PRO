@@ -5,7 +5,7 @@
 |---|---|
 | **Nama Produk** | IoT Hub |
 | **Versi Dokumen** | 1.0.0 |
-| **Lead Developer & Architect** | **Fadli** |
+| **Lead Developer & Architect** | **Muhamad Fadli** |
 | **Tanggal Pembuatan** | 17 Agustus 2026 |
 | **Status** | Approved & Implemented |
 | **Target Rilis** | v1.0.0 (Phase 1-4 Roadmap) |

@@ -37,7 +37,7 @@ export const LandingPage: React.FC = () => {
             <div className="flex items-baseline space-x-1.5">
               <span className="text-xl font-extrabold font-heading text-white tracking-tight">IoT Hub</span>
               <span className="text-[10px] uppercase font-mono font-bold bg-brand-500/20 text-brand-400 px-2.5 py-0.5 rounded-full border border-brand-500/30">
-                by Fadli
+                by Muhamad Fadli
               </span>
             </div>
           </div>
@@ -76,7 +76,7 @@ export const LandingPage: React.FC = () => {
         <div className="max-w-6xl mx-auto text-center relative z-10">
           <div className="inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-brand-500/10 border border-brand-500/30 text-brand-300 text-xs font-mono mb-6 animate-float">
             <Sparkles className="w-3.5 h-3.5 text-brand-400" />
-            <span>Engineered by Fadli — Universal IoT Platform for Makers, Startups & Industry</span>
+            <span>Engineered by Muhamad Fadli — Universal IoT Platform for Makers, Startups & Industry</span>
           </div>
 
           <h1 className="text-4xl sm:text-6xl lg:text-7xl font-extrabold font-heading text-white tracking-tight leading-[1.1] max-w-4xl mx-auto">
@@ -381,7 +381,7 @@ export const LandingPage: React.FC = () => {
             <span>— Universal & Industrial IoT Engine</span>
           </div>
           <div>
-            Developed & Engineered by <strong className="text-gray-200">Fadli</strong> • 2026
+            Developed & Engineered by <strong className="text-gray-200">Muhamad Fadli</strong> • 2026
           </div>
         </div>
       </footer>
