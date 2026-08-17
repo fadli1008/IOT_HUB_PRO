@@ -262,40 +262,34 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   // =========================================================================
-  // 4. SOCIAL OAUTH (Google / GitHub with dedicated registration or login)
+  // 4. SOCIAL OAUTH (Google / GitHub with strict registration check)
   // =========================================================================
   const socialLogin = async (provider: 'google' | 'github', emailOrUser: string): Promise<boolean> => {
-    const cleanEmail = emailOrUser.includes('@') ? emailOrUser.trim().toLowerCase() : `${emailOrUser.trim().toLowerCase()}@github.com`;
-    const rawName = emailOrUser.split('@')[0];
-    const formattedName = rawName.charAt(0).toUpperCase() + rawName.slice(1);
+    const cleanEmail = emailOrUser.trim().toLowerCase();
 
-    let targetUser = allUsers.find(u => u.email.toLowerCase() === cleanEmail);
-
-    if (!targetUser) {
-      // Create new social user
-      targetUser = {
-        id: 'usr_' + Math.random().toString(36).substring(2, 9),
-        name: `${formattedName} (${provider.toUpperCase()})`,
-        email: cleanEmail,
-        password: 'social_oauth_password',
-        avatarUrl: `https://api.dicebear.com/7.x/identicon/svg?seed=${cleanEmail}`,
-        role: 'operator',
-        isEmailVerified: true,
-        createdAt: new Date().toISOString(),
-        status: 'active',
-        deviceLimit: 5,
-        devicesCount: 0,
-        lastLogin: 'Just now'
-      };
-      setAllUsers(prev => [targetUser!, ...prev]);
+    // Strict email format validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(cleanEmail)) {
+      throw new Error(`Alamat email tidak valid. Silakan masukkan format email yang benar (contoh: nama@${provider === 'google' ? 'gmail.com' : 'domain.com'}).`);
     }
 
-    setUser(targetUser);
+    const targetUser = allUsers.find(u => u.email.toLowerCase() === cleanEmail);
+
+    if (!targetUser) {
+      throw new Error(`Akun ${provider.toUpperCase()} (${cleanEmail}) belum terdaftar di IoT Hub Pro. Silakan klik "Sign Up for Free" untuk membuat akun baru terlebih dahulu.`);
+    }
+
+    if (targetUser.status === 'suspended') {
+      throw new Error('Akun Anda dinonaktifkan (suspended) oleh Super Admin.');
+    }
+
+    setUser({ ...targetUser, lastLogin: 'Just now' });
+    const isSuper = targetUser.role === 'owner';
     setOrganization({
       id: 'org_' + targetUser.id,
-      name: `${targetUser.name}'s Workspace`,
+      name: isSuper ? "Muhamad Fadli's Enterprise Hub" : `${targetUser.name}'s Workspace`,
       slug: targetUser.name.toLowerCase().replace(/\s+/g, '-'),
-      plan: 'free',
+      plan: isSuper ? 'enterprise' : targetUser.role === 'admin' ? 'pro' : 'free',
       deviceLimit: targetUser.deviceLimit || 5,
       devicesCount: targetUser.devicesCount || 0,
       role: targetUser.role
