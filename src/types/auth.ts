@@ -12,6 +12,7 @@ export interface User {
   deviceLimit?: number;
   devicesCount?: number;
   lastLogin?: string;
+  password?: string;
 }
 
 export interface Organization {

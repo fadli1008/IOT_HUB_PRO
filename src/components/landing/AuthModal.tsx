@@ -22,7 +22,7 @@ interface AuthModalProps {
 }
 
 export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMode = 'register' }) => {
-  const { login, register, verifyOtp, pendingEmail } = useAuth();
+  const { login, register, verifyOtp, socialLogin, pendingEmail, pendingOtp } = useAuth();
   const [mode, setMode] = useState<'login' | 'register' | 'otp' | 'oauth_google' | 'oauth_github'>(initialMode);
   
   // Form states
@@ -44,32 +44,33 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMo
 
     try {
       if (mode === 'login') {
-        if (!email) throw new Error('Please enter your email');
+        if (!email) throw new Error('Silakan masukkan alamat email');
+        if (!password) throw new Error('Silakan masukkan password akun Anda');
         await login(email, password);
         onClose();
       } else if (mode === 'register') {
-        if (!name || !email) throw new Error('Please fill in all fields');
+        if (!name || !email || !password) throw new Error('Semua kolom (Nama, Email, Password) wajib diisi');
         const res = await register(name, email, password);
         if (res.requiresOtp) {
           setMode('otp');
         }
       } else if (mode === 'otp') {
-        if (otpCode.length < 6) throw new Error('Please enter a valid 6-digit OTP');
+        if (otpCode.length < 6) throw new Error('Silakan masukkan 6 digit kode OTP yang valid');
         const success = await verifyOtp(otpCode);
         if (success) {
           onClose();
         } else {
-          throw new Error('Invalid OTP code. Please enter 6 digits.');
+          throw new Error('Kode OTP tidak valid.');
         }
       }
     } catch (err: any) {
-      setError(err.message || 'Authentication failed');
+      setError(err.message || 'Proses autentikasi gagal');
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleOAuthConfirm = async (selectedEmail: string, selectedName: string) => {
+  const handleOAuthConfirm = async (provider: 'google' | 'github', selectedEmail: string) => {
     if (!selectedEmail) {
       setError('Silakan masukkan alamat email atau username Anda.');
       return;
@@ -79,10 +80,10 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMo
     try {
       // Simulate authentic OAuth network handshake
       await new Promise(resolve => setTimeout(resolve, 800));
-      await login(selectedEmail, 'oauth_social_token');
+      await socialLogin(provider, selectedEmail);
       onClose();
     } catch (err: any) {
-      setError(err.message || 'OAuth authorization failed');
+      setError(err.message || 'Otorisasi OAuth gagal.');
     } finally {
       setIsLoading(false);
     }
@@ -149,7 +150,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMo
 
               <button
                 disabled={isLoading}
-                onClick={() => handleOAuthConfirm(customSocialEmail, customSocialEmail.split('@')[0])}
+                onClick={() => handleOAuthConfirm('google', customSocialEmail)}
                 className="w-full py-3 bg-brand-500 hover:bg-brand-400 text-black font-bold text-xs rounded-xl shadow-lg glow-cyan transition flex items-center justify-center space-x-2 font-mono"
               >
                 {isLoading ? (
@@ -221,7 +222,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMo
                 disabled={isLoading}
                 onClick={() => {
                   const emailOrUser = customGithubUser.includes('@') ? customGithubUser : `${customGithubUser}@github.com`;
-                  handleOAuthConfirm(emailOrUser, customGithubUser);
+                  handleOAuthConfirm('github', emailOrUser);
                 }}
                 className="w-full py-3 bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-xs rounded-xl shadow-lg glow-green transition flex items-center justify-center space-x-2 font-mono"
               >
@@ -352,7 +353,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMo
                   </div>
                   <div className="p-3 bg-brand-500/10 border border-brand-500/20 rounded-xl text-center">
                     <span className="text-[11px] text-brand-300 font-mono">
-                      💡 Demo Mode: Enter any 6-digit number (e.g. <strong>123456</strong>)
+                      📩 Kode OTP Verifikasi Anda: <strong className="text-white bg-brand-500/20 px-2 py-0.5 rounded border border-brand-500/40 text-sm tracking-widest">{pendingOtp || '123456'}</strong>
                     </span>
                   </div>
                 </div>
