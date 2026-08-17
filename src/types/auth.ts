@@ -8,6 +8,10 @@ export interface User {
   role: UserRole;
   isEmailVerified: boolean;
   createdAt: string;
+  status?: 'active' | 'suspended';
+  deviceLimit?: number;
+  devicesCount?: number;
+  lastLogin?: string;
 }
 
 export interface Organization {
