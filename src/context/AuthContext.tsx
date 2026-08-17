@@ -23,8 +23,8 @@ interface AuthContextType {
 
 const DEFAULT_ORG: Organization = {
   id: 'org_default',
-  name: "My IoT Workspace",
-  slug: 'my-iot-workspace',
+  name: "IoT Workspace",
+  slug: 'iot-workspace',
   plan: 'free',
   deviceLimit: 5,
   devicesCount: 0,
@@ -72,19 +72,6 @@ const INITIAL_USERS: User[] = [
     deviceLimit: 15,
     devicesCount: 2,
     lastLogin: 'Yesterday'
-  },
-  {
-    id: 'usr_guest_04',
-    name: 'Viewer Client',
-    email: 'auditor@investor.com',
-    avatarUrl: 'https://api.dicebear.com/7.x/identicon/svg?seed=auditor',
-    role: 'viewer',
-    isEmailVerified: true,
-    createdAt: '2026-08-14T08:00:00Z',
-    status: 'active',
-    deviceLimit: 5,
-    devicesCount: 0,
-    lastLogin: '3 days ago'
   }
 ];
 
@@ -95,9 +82,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [allUsers, setAllUsers] = useState<User[]>(() => storage.get('all_users', INITIAL_USERS));
   const [organization, setOrganization] = useState<Organization | null>(() => storage.get('org', DEFAULT_ORG));
   const [onboarding, setOnboarding] = useState<OnboardingState>(() => 
-    storage.get('onboarding', { isCompleted: true, workspaceName: "Muhamad Fadli's IoT Workspace", useCase: 'industrial', experienceLevel: 'expert' })
+    storage.get('onboarding', { isCompleted: true, workspaceName: "My IoT Workspace", useCase: 'industrial', experienceLevel: 'intermediate' })
   );
   const [pendingEmail, setPendingEmail] = useState<string | null>(() => storage.get('pendingEmail', null));
+  const [pendingName, setPendingName] = useState<string | null>(() => storage.get('pendingName', null));
 
   useEffect(() => {
     if (user) storage.set('user', user);
@@ -119,9 +107,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const login = async (email: string, password?: string): Promise<boolean> => {
     const cleanEmail = email.trim().toLowerCase();
 
-    // 1. Super Admin Login Authentication
-    if (cleanEmail === 'admin@iothub.local' || cleanEmail === 'fadli@iothub.pro' || cleanEmail === 'muhamad.fadli@gmail.com') {
-      if (password !== 'oauth_social_token' && password !== 'admin123' && password !== 'fadli123' && password !== 'admin') {
+    // 1. Super Admin Official Login
+    if (cleanEmail === 'admin@iothub.local') {
+      if (password !== 'oauth_social_token' && password !== 'admin123' && password !== 'fadli123') {
         throw new Error('Password salah untuk akun Super Admin. (Default: admin123)');
       }
       setUser(INITIAL_SUPER_ADMIN);
@@ -156,13 +144,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return true;
     }
 
-    // 3. New User Registration / Guest Fallback
-    const displayName = email.split('@')[0].toUpperCase();
+    // 3. New User Registration / Guest Login
+    const username = cleanEmail.split('@')[0];
+    const formattedName = username.charAt(0).toUpperCase() + username.slice(1);
+
     const newUser: User = {
       id: 'usr_' + Math.random().toString(36).substring(2, 9),
-      name: displayName,
-      email,
-      avatarUrl: `https://api.dicebear.com/7.x/identicon/svg?seed=${email}`,
+      name: formattedName,
+      email: cleanEmail,
+      avatarUrl: `https://api.dicebear.com/7.x/identicon/svg?seed=${cleanEmail}`,
       role: 'operator',
       isEmailVerified: true,
       createdAt: new Date().toISOString(),
@@ -176,8 +166,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setUser(newUser);
     setOrganization({
       id: 'org_' + newUser.id,
-      name: `${displayName}'s Workspace`,
-      slug: displayName.toLowerCase(),
+      name: `${formattedName}'s Workspace`,
+      slug: username,
       plan: 'free',
       deviceLimit: 5,
       devicesCount: 0,
@@ -188,21 +178,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const register = async (name: string, email: string, _password?: string) => {
     setPendingEmail(email);
+    setPendingName(name);
     storage.set('pendingEmail', email);
+    storage.set('pendingName', name);
     return { success: true, requiresOtp: true };
   };
 
   const verifyOtp = async (code: string): Promise<boolean> => {
     if (code.length === 6) {
       const email = pendingEmail || 'user@iothub.local';
-      const isSuper = email.includes('fadli') || email.includes('admin');
-      const displayName = isSuper ? 'Muhamad Fadli' : email.split('@')[0];
+      const cleanEmail = email.trim().toLowerCase();
+      const rawName = pendingName || cleanEmail.split('@')[0];
+      const displayName = rawName.charAt(0).toUpperCase() + rawName.slice(1);
+
+      const isSuper = cleanEmail === 'admin@iothub.local';
 
       const newUser: User = {
         id: 'usr_' + Math.random().toString(36).substring(2, 9),
-        name: displayName,
-        email,
-        avatarUrl: `https://api.dicebear.com/7.x/identicon/svg?seed=${email}`,
+        name: isSuper ? 'Muhamad Fadli' : displayName,
+        email: cleanEmail,
+        avatarUrl: `https://api.dicebear.com/7.x/identicon/svg?seed=${cleanEmail}`,
         role: isSuper ? 'owner' : 'operator',
         isEmailVerified: true,
         createdAt: new Date().toISOString(),
@@ -212,19 +207,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         lastLogin: 'Just now'
       };
 
-      setAllUsers(prev => [newUser, ...prev.filter(u => u.email !== email)]);
+      setAllUsers(prev => [newUser, ...prev.filter(u => u.email !== cleanEmail)]);
       setUser(newUser);
       setOrganization({
         id: 'org_' + newUser.id,
-        name: `${displayName}'s Workspace`,
-        slug: displayName.toLowerCase().replace(/\s+/g, '-'),
+        name: `${newUser.name}'s Workspace`,
+        slug: newUser.name.toLowerCase().replace(/\s+/g, '-'),
         plan: isSuper ? 'enterprise' : 'free',
         deviceLimit: isSuper ? 500 : 5,
         devicesCount: 0,
         role: isSuper ? 'owner' : 'operator'
       });
+
       storage.remove('pendingEmail');
+      storage.remove('pendingName');
       setPendingEmail(null);
+      setPendingName(null);
       return true;
     }
     return false;
@@ -263,7 +261,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const newUser: User = {
       id: 'usr_' + Math.random().toString(36).substring(2, 9),
       name,
-      email,
+      email: email.trim().toLowerCase(),
       avatarUrl: `https://api.dicebear.com/7.x/identicon/svg?seed=${email}`,
       role,
       isEmailVerified: true,
