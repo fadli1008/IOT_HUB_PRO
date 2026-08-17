@@ -1,7 +1,15 @@
 {
   "rewrites": [
     {
-      "source": "/(.*)",
+      "source": "/api/telemetry",
+      "destination": "/api/telemetry.js"
+    },
+    {
+      "source": "/api/v1/telemetry",
+      "destination": "/api/telemetry.js"
+    },
+    {
+      "source": "/((?!api/).*)",
       "destination": "/index.html"
     }
   ]
