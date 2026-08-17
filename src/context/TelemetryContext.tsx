@@ -1,6 +1,10 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
+import mqtt, { MqttClient } from 'mqtt';
 import { TelemetryStreamState, TelemetryHistory, DeviceCommandPacket } from '../types/telemetry';
 import { useDevices } from './DeviceContext';
+
+// Global public MQTT broker with WSS support for browser clients
+const MQTT_WS_BROKER = 'wss://broker.emqx.io:8084/mqtt';
 
 interface TelemetryContextType {
   telemetry: TelemetryStreamState;
@@ -71,6 +75,80 @@ export const TelemetryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
   const clearLogs = () => setLogMessages([]);
 
+  const mqttClientRef = useRef<MqttClient | null>(null);
+
+  // Live Cloud MQTT Broker Connection (wss://broker.emqx.io:8084/mqtt)
+  useEffect(() => {
+    try {
+      const client = mqtt.connect(MQTT_WS_BROKER, {
+        clientId: 'iothub_web_' + Math.random().toString(36).substring(2, 9),
+        clean: true,
+        connectTimeout: 5000,
+        reconnectPeriod: 3000
+      });
+
+      client.on('connect', () => {
+        console.log('[IoT Hub Cloud] Terhubung ke Broker MQTT Publik via WebSocket WSS!');
+        client.subscribe('iothub/v1/+/telemetry');
+        client.subscribe('iothub/v1/+/status');
+      });
+
+      client.on('message', (topic, message) => {
+        try {
+          const payload = JSON.parse(message.toString());
+          const parts = topic.split('/');
+          const token = parts[2];
+
+          addLog(topic, payload, 'sub');
+
+          const currentDevices = devicesRef.current;
+          const dev = currentDevices.find(d => d.token === token || d.id === token) || currentDevices[0];
+          if (!dev) return;
+
+          const now = Date.now();
+          Object.entries(payload).forEach(([key, val]) => {
+            const pin = key.toUpperCase();
+            const numVal = typeof val === 'number' ? val : Number(val);
+
+            if (!isNaN(numVal)) {
+              setTelemetry(prev => ({
+                ...prev,
+                [dev.id]: {
+                  ...(prev[dev.id] || {}),
+                  [pin]: numVal
+                }
+              }));
+
+              setHistory(prev => {
+                const devHist = prev[dev.id] || {};
+                const pinHist = devHist[pin] || [];
+                return {
+                  ...prev,
+                  [dev.id]: {
+                    ...devHist,
+                    [pin]: [...pinHist.slice(-29), { timestamp: now, value: numVal }]
+                  }
+                };
+              });
+
+              updateDatastream(dev.id, pin, numVal);
+            }
+          });
+        } catch (err) {
+          console.error('[MQTT Message Error]', err);
+        }
+      });
+
+      mqttClientRef.current = client;
+
+      return () => {
+        client.end();
+      };
+    } catch (e) {
+      console.warn('[MQTT Connect Error]', e);
+    }
+  }, [addLog, updateDatastream]);
+
   const sendCommand = useCallback((deviceId: string, pin: string, value: any) => {
     // 1. Update shadow desired
     updateDeviceShadowDesired(deviceId, { [pin]: value });
@@ -78,9 +156,16 @@ export const TelemetryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     // 2. Dispatch simulated MQTT command topic
     const device = devicesRef.current.find(d => d.id === deviceId);
     const token = device ? device.token : 'token';
-    addLog(`iothub/v1/${token}/command`, { [pin.toLowerCase()]: value }, 'cmd');
+    const topic = `iothub/v1/${token}/command`;
+    const payload = { [pin.toLowerCase()]: value, [pin]: value };
+    addLog(topic, payload, 'cmd');
 
-    // 3. Immediately reflect in telemetry & reported state
+    // 3. Publish to live MQTT Broker if connected
+    if (mqttClientRef.current && mqttClientRef.current.connected) {
+      mqttClientRef.current.publish(topic, JSON.stringify(payload));
+    }
+
+    // 4. Immediately reflect in telemetry & reported state
     updateDatastream(deviceId, pin, value);
     setTelemetry(prev => ({
       ...prev,
