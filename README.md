@@ -130,6 +130,51 @@ npm run build
 
 ---
 
+## 📦 Library Arduino Resmi: `IoTHubPro` (Sangat Direkomendasikan ⭐)
+
+Untuk kemudahan integrasi dengan sintaks intuitif ala **Blynk** & **ThingsBoard**, gunakan library **`IoTHubPro`** yang tersedia di folder [`libraries/IoTHubPro`](./libraries/IoTHubPro):
+
+```cpp
+#include <IoTHubPro.h>
+
+const char* AUTH_TOKEN = "dev_esp32_boiler_01";
+const char* WIFI_SSID  = "NAMA_WIFI_ANDA";
+const char* WIFI_PASS  = "PASSWORD_WIFI_ANDA";
+
+// Kontrol Relay (V2) dari Web Dashboard
+IOTHUB_WRITE(V2) {
+  int state = param.asInt();
+  digitalWrite(2, state ? HIGH : LOW);
+}
+
+// Kontrol Dimmer / Slider PWM (V5) dari Web Dashboard
+IOTHUB_WRITE(V5) {
+  int pwm = param.asInt();
+  analogWrite(18, pwm);
+}
+
+void setup() {
+  Serial.begin(115200);
+  pinMode(2, OUTPUT);
+  IoTHub.begin(AUTH_TOKEN, WIFI_SSID, WIFI_PASS); // Sambung Wi-Fi & Cloud Broker otomatis
+}
+
+void loop() {
+  IoTHub.run(); // Wajib di loop
+
+  static unsigned long lastSend = 0;
+  if (millis() - lastSend > 2000) {
+    lastSend = millis();
+    IoTHub.virtualWrite(V0, 28.5);                        // Radial Gauge (Suhu)
+    IoTHub.virtualWrite(V1, 65.0);                        // Time-Series Line Chart (Kelembaban)
+    IoTHub.virtualWrite(V6, 750.0);                       // Liquid Tank Silo (Level Liter)
+    IoTHub.locationWrite(V8, -6.2088, 106.8456, 45.0);    // GPS Fleet Map Tracker
+  }
+}
+```
+
+---
+
 ## 🔌 Integrasi ESP32 Fisik ke Localhost
 
 Jika Anda memiliki board ESP32 fisik dan ingin mengirimkan data nyata ke dashboard yang berjalan di localhost:

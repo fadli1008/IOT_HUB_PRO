@@ -93,35 +93,103 @@ Setelah masuk ke workspace, Anda perlu mendaftarkan perangkat agar mendapatkan `
 
 ---
 
-## 4. Langkah 3: Mengintegrasikan Hardware & Mengunggah Firmware
+## 4. Langkah 3: Mengintegrasikan Hardware dengan Library `IoTHubPro`
 
-Platform IoT Hub menyediakan generator kode otomatis di menu **"Firmware SDK"**. Berikut adalah panduan langkah demi langkah untuk berbagai jenis hardware:
+Untuk kemudahan maksimal (gaya pemrograman intuitif ala **Blynk** & **ThingsBoard**), Anda disarankan menggunakan **Library Resmi `IoTHubPro`** yang telah kami sediakan di folder `libraries/IoTHubPro`.
 
 ---
 
-### A. Panduan ESP32 / ESP8266 (Arduino C++)
+### A.1 Panduan Menggunakan Library `IoTHubPro` (Sangat Direkomendasikan ⭐)
 
+#### 1. Cara Memasang Library di Arduino IDE:
+1. Unduh folder **`libraries/IoTHubPro`** dari repositori GitHub ini.
+2. Letakkan folder `IoTHubPro` ke dalam direktori library Arduino komputer Anda:
+   * **Windows**: `Documents/Arduino/libraries/IoTHubPro`
+   * **Mac/Linux**: `~/Documents/Arduino/libraries/IoTHubPro`
+3. Buka **Arduino IDE** ➡️ Masuk ke **Library Manager** (Ctrl+Shift+I), pastikan library **`ArduinoJson`** (v6/v7) dan **`PubSubClient`** sudah terinstal.
+
+#### 2. Tabel Panduan Virtual Pin untuk Setiap Jenis Widget:
+
+| Jenis Widget di Dashboard | Saluran Virtual Pin | Sintaks Pengiriman (ESP32 ➡️ Web) | Sintaks Penerimaan (Web ➡️ ESP32) |
+|---|---|---|---|
+| 🧭 **Radial & Linear Gauge** | `V0`, `V4`, `V10` | `IoTHub.virtualWrite(V0, suhu);` | — |
+| 📈 **Time-Series Line Chart** | `V1`, `V3` | `IoTHub.virtualWrite(V1, kelembaban);` | — |
+| 🎛️ **Relay Switch (Saklar)** | `V2`, `V12` | — | `IOTHUB_WRITE(V2) { int on = param.asInt(); }` |
+| 🎚️ **Analog Slider (Dimmer)** | `V5`, `V15` | — | `IOTHUB_WRITE(V5) { int pwm = param.asInt(); }` |
+| 💧 **Liquid Tank (Silinder)** | `V6` | `IoTHub.virtualWrite(V6, literCairan);` | — |
+| 🎨 **RGB Color Picker** | `V7` | — | `IOTHUB_WRITE(V7) { String hex = param.asStr(); }` |
+| 🗺️ **GPS Fleet Map Tracker** | `V8` | `IoTHub.locationWrite(V8, lat, lon, speed);` | — |
+| 🏭 **SCADA Schematic Motor** | `V10` | `IoTHub.virtualWrite(V10, 1);` | `IOTHUB_WRITE(V10) { ... }` |
+
+#### 3. Contoh Program Lengkap (Semua Widget Terintegrasi):
+
+```cpp
+#include <IoTHubPro.h>
+
+// 1. Kredensial Perangkat & Jaringan
+const char* AUTH_TOKEN = "dev_esp32_boiler_01"; // Masukkan token dari menu Device Fleet
+const char* WIFI_SSID  = "NAMA_WIFI_ANDA";
+const char* WIFI_PASS  = "PASSWORD_WIFI_ANDA";
+
+#define RELAY_PIN 2
+#define PWM_PIN   18
+
+// 2. Menerima Perintah Saklar Relay (V2) dari Web Dashboard
+IOTHUB_WRITE(V2) {
+  int state = param.asInt();
+  digitalWrite(RELAY_PIN, state ? HIGH : LOW);
+  Serial.printf("[KONTROL] Relay V2 diubah menjadi: %s\n", state ? "ON" : "OFF");
+}
+
+// 3. Menerima Perintah Slider Kecepatan Motor PWM (V5) dari Web Dashboard
+IOTHUB_WRITE(V5) {
+  int pwmValue = param.asInt();
+  analogWrite(PWM_PIN, pwmValue);
+  Serial.printf("[KONTROL] Kecepatan Motor PWM V5 diset ke: %d\n", pwmValue);
+}
+
+// 4. Menerima Pilihan Warna RGB (V7) dari Web Dashboard
+IOTHUB_WRITE(V7) {
+  String hexColor = param.asStr();
+  Serial.printf("[KONTROL] Warna RGB V7 diubah menjadi: %s\n", hexColor.c_str());
+}
+
+void setup() {
+  Serial.begin(115200);
+  pinMode(RELAY_PIN, OUTPUT);
+  pinMode(PWM_PIN, OUTPUT);
+
+  // Inisialisasi otomatis Wi-Fi dan Cloud Broker
+  IoTHub.begin(AUTH_TOKEN, WIFI_SSID, WIFI_PASS);
+}
+
+void loop() {
+  // Wajib dipanggil untuk sinkronisasi cloud
+  IoTHub.run();
+
+  // Kirim data telemetri tiap 2 detik
+  static unsigned long lastSend = 0;
+  if (millis() - lastSend >= 2000) {
+    lastSend = millis();
+
+    float suhu       = 28.5;  // Dari sensor DHT22
+    float kelembaban = 65.0;
+    float tekanan    = 4.8;
+    float levelTank  = 850.0; // Liter
+
+    // Kirim data ke berbagai macam widget di web:
+    IoTHub.virtualWrite(V0, suhu);                        // Ke Widget Gauge Suhu
+    IoTHub.virtualWrite(V1, kelembaban);                  // Ke Widget Grafik Time-Series
+    IoTHub.virtualWrite(V4, tekanan);                     // Ke Widget Display Tekanan
+    IoTHub.virtualWrite(V6, levelTank);                   // Ke Widget Tangki Cairan
+    IoTHub.locationWrite(V8, -6.2088, 106.8456, 45.0);    // Ke Widget Peta GPS Tracker
+  }
+}
 ```
-┌────────────────┐      Wi-Fi / Internet      ┌─────────────────────┐
-│  ESP32 DevKit  │ ─────────────────────────▶ │ Broker MQTT Global  │
-│  + Sensor DHT  │      Port :1883            │ (broker.emqx.io)    │
-└────────────────┘                            └─────────────────────┘
-```
 
-#### 1. Persiapan Software & Library (Arduino IDE / PlatformIO):
-Pastikan Anda telah menginstal library berikut melalui Library Manager di Arduino IDE:
-* **`PubSubClient`** (oleh Nick O'Leary)
-* **`ArduinoJson`** (oleh Benoit Blanchon - versi 6.x / 7.x)
-* **`DHT sensor library`** (oleh Adafruit - jika menggunakan sensor suhu/kelembaban DHT)
+---
 
-#### 2. Generator Kode Otomatis:
-1. Buka menu **"Firmware SDK"** di sidebar web IoT Hub.
-2. Pada dropdown **Target Device**, pilih perangkat yang baru Anda buat.
-3. Pada dropdown **Framework**, pilih **`ESP32 (Arduino C++)`**.
-4. Masukkan **WiFi SSID** dan **WiFi Password** rumah/kantor Anda.
-5. Kode lengkap akan ter-generate secara otomatis! Klik **"Copy Code"** atau **"Download File" (`.ino`)**.
-
-#### 3. Cuplikan Kode Firmware ESP32:
+### A.2 Panduan ESP32 Menggunakan Raw MQTT (PubSubClient)
 
 ```cpp
 #include <WiFi.h>

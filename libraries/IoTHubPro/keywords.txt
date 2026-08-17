@@ -1,0 +1,43 @@
+#######################################
+# Syntax Highlighting For IoTHubPro
+#######################################
+
+#######################################
+# Datatypes (KEYWORD1)
+#######################################
+
+IoTHubClient	KEYWORD1
+IoTHubParam	KEYWORD1
+VirtualPin	KEYWORD1
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+
+begin	KEYWORD2
+run	KEYWORD2
+virtualWrite	KEYWORD2
+locationWrite	KEYWORD2
+log	KEYWORD2
+asInt	KEYWORD2
+asFloat	KEYWORD2
+asDouble	KEYWORD2
+asStr	KEYWORD2
+
+#######################################
+# Constants (LITERAL1)
+#######################################
+
+IoTHub	LITERAL1
+IOTHUB_WRITE	LITERAL1
+V0	LITERAL1
+V1	LITERAL1
+V2	LITERAL1
+V3	LITERAL1
+V4	LITERAL1
+V5	LITERAL1
+V6	LITERAL1
+V7	LITERAL1
+V8	LITERAL1
+V9	LITERAL1
+V10	LITERAL1
