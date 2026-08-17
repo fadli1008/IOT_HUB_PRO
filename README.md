@@ -1,57 +1,242 @@
-# 🌐 IoT Hub — Universal & Industrial IoT Platform
-> **Lead Developer & Creator**: **Fadli**
+# 🌐 IoT Hub Pro — Universal & Industrial IoT Platform
 
-Platform IoT end-to-end modern dan agnostik perangkat keras yang dibangun dan dirancang oleh **Fadli**, dirancang untuk menghubungkan hardware kustom ke cloud dengan kemudahan setara **Blynk**, fleksibilitas aturan setara **ThingsBoard**, dan keandalan kelas industri.
+<div align="center">
+
+![IoT Hub Banner](https://img.shields.io/badge/IoT_Hub-Pro_v1.0.0-06b6d4?style=for-the-badge&logo=iot&logoColor=black)
+![React](https://img.shields.io/badge/React_18-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
+![TypeScript](https://img.shields.io/badge/TypeScript_5.0-007ACC?style=for-the-badge&logo=typescript&logoColor=white)
+![TailwindCSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)
+![Vite](https://img.shields.io/badge/Vite_6.0-646CFF?style=for-the-badge&logo=vite&logoColor=white)
+![Python](https://img.shields.io/badge/Python_3.14-3776AB?style=for-the-badge&logo=python&logoColor=white)
+![License](https://img.shields.io/badge/License-MIT-emerald?style=for-the-badge)
+
+**Platform IoT Universal & Industri yang Fleksibel, Agnostik Hardware, dan Berkinerja Tinggi.**  
+*Didesain dan dikembangkan sebagai solusi modern yang menggabungkan kemudahan drag-and-drop ala **Blynk**, fleksibilitas aturan ala **ThingsBoard**, dan keandalan skematik **SCADA Industri**.*
+
+[🚀 Fitur Utama](#-fitur-utama) • [⚡ Mulai Cepat](#-panduan-instalasi--menjalankan-cepat) • [🔌 Integrasi ESP32 Fisik](#-integrasi-esp32-fisik-ke-localhost) • [📊 Ekspor Data Historis](#-ekspor-data-historis--analitik) • [📖 Panduan Lengkap](#-dokumen-dan-panduan-lengkap)
+
+</div>
 
 ---
 
-## 📚 Dokumen Proyek
-* 📋 **[PRD.md](file:///d:/PROJECT%20PYTHON/IOT_HUB/PRD.md)** — Product Requirements Document lengkap (arsitektur, spesifikasi fitur, benchmark kompetitor, roadmap).
-* 📖 **[USER_MANUAL.md](file:///d:/PROJECT%20PYTHON/IOT_HUB/USER_MANUAL.md)** — Buku Panduan Pengguna lengkap (dari registrasi akun, pembuatan dashboard drag-and-drop, hingga integrasi firmware ESP32, Python, dan MicroPython).
-* 🚀 **[Walkthrough](file:///C:/Users/fadli/.gemini/antigravity-ide/brain/da6a33f7-8eac-4cff-b309-68891207f9ff/walkthrough.md)** — Rangkuman implementasi dan hasil verifikasi platform.
+## 👨‍💻 Developer & Pemilik Proyek
+* **Lead Developer & Architect**: **Fadli** ([@fadli1008](https://github.com/fadli1008))
+* **Repository**: [https://github.com/fadli1008/IOT_HUB_PRO](https://github.com/fadli1008/IOT_HUB_PRO)
 
 ---
 
-## ⚡ Cara Menjalankan Secara Lokal
+## 📑 Daftar Isi
+- [Arsitektur Sistem](#-arsitektur-sistem)
+- [Fitur Utama](#-fitur-utama)
+- [Panduan Instalasi & Menjalankan Cepat](#-panduan-instalasi--menjalankan-cepat)
+- [Integrasi ESP32 Fisik ke Localhost](#-integrasi-esp32-fisik-ke-localhost)
+- [Ekspor Data Historis & Analitik](#-ekspor-data-historis--analitik)
+- [Dokumen dan Panduan Lengkap](#-dokumen-dan-panduan-lengkap)
+- [Struktur Direktori Proyek](#-struktur-direktori-proyek)
 
-### 1. Instalasi Dependensi
+---
+
+## 🏗️ Arsitektur Sistem
+
+```
+┌─────────────────────────┐       HTTP / MQTTS :8883       ┌──────────────────────────────────────────────┐
+│     HARDWARE KUSTOM     │ ─────────────────────────────▶ │            IoT Hub Platform (Local / Cloud)  │
+│ • ESP32 / ESP8266 (C++) │                                │ ┌──────────────────────────────────────────┐ │
+│ • Raspberry Pi (Python) │ ◀───────────────────────────── │ │  1. Local Bridge Gateway (server.py)     │ │
+│ • MicroPython / STM32   │       Command & Shadow Delta   │ │     REST Ingestion & WebSocket Server    │ │
+│ • PLC Modbus RTU/TCP    │                                │ └────────────────────┬─────────────────────┘ │
+└─────────────────────────┘                                │                      │ Real-time Stream      │
+                                                           │ ┌────────────────────▼─────────────────────┐ │
+                                                           │ │  2. WYSIWYG Drag & Drop UI (React 18)    │ │
+                                                           │ │     Gauges, Charts, SCADA, Map, History  │ │
+                                                           │ └──────────────────────────────────────────┘ │
+                                                           └──────────────────────────────────────────────┘
+```
+
+---
+
+## 🌟 Fitur Utama
+
+### 1. 🚪 Gated Authentication & Onboarding
+* **Registrasi Mandiri**: Formulir pendaftaran akun aman, dukungan Social Sign-Up (Google & GitHub), dan simulasi verifikasi email OTP 6-Digit.
+* **Onboarding Wizard**: Pemilihan persona (*Maker*, *Startup*, atau *Industri*) dan aktivasi otomatis paket **Free Lifetime (5 Perangkat Gratis)**.
+
+### 2. 🎛️ WYSIWYG Drag & Drop Dashboard Builder
+* **Canvas Grid 12/24 Kolom Responsif**: Pengaturan tata letak leluasa dengan *magnetic snap-to-grid* dan *resize handles*.
+* **Property Inspector (Sidebar Kanan)**: Konfigurasi data binding **Virtual Pin (`V0`–`V255`)**, rumus transformasi (`value * 1.8 + 32`), pewarnaan alarm dinamis (*Warning & Critical*), serta tema kartu (*Glassmorphism*, *Solid*, *Cyber Glow*).
+* **Multi-Viewport & Mode Kiosk**: Pratinjau responsif untuk Desktop, Tablet, Smartphone (Mobile), serta mode Kiosk Full-Screen TV.
+
+### 3. 🧭 Katalog Widget Industri Lengkap
+* 🧭 **Radial Gauge**: Speedometer presisi dengan busur warna peringatan dinamis.
+* 📈 **Time-Series Chart**: Grafik multi-variabel real-time streaming (update 1 detik) dengan tombol quick export CSV.
+* 🎛️ **Relay Switch**: Saklar kontrol aktuator industri dengan dialog konfirmasi keselamatan.
+* 🎚️ **Analog Slider**: Pengatur dimmer / PWM dengan feedback numerik langsung.
+* 💧 **Liquid Tank**: Visualisasi tangki cairan silinder dengan level persentase dinamis.
+* 🏭 **SCADA HMI Schematic**: Diagram industri interaktif (Boiler Core, Heat Exchanger, Motor Pompa, dan pipa beranimasi alir).
+* 🗺️ **GPS Fleet Map**: Peta pelacakan armada kendaraan berbasis **OpenStreetMap** dan mode **Cyber Radar**.
+* 🎨 **RGB Color Picker** & 💻 **Serial Terminal Console**.
+
+### 4. 📟 Device Fleet & Digital Twin (Device Shadow)
+* Manajemen armada perangkat, status koneksi (*Online/Offline*), sinyal RSSI, dan penyalin token 1-klik.
+* **Digital Twin Shadow Inspector**: Pemantau status *Desired State* vs *Reported State* dengan fitur *Push Delta Sync*.
+
+### 5. 📊 Historical Telemetry Analytics & 1-Click Export
+* Analisis data time-series berdasarkan rentang waktu (`1h`, `24h`, `7d`, `30d`).
+* Kartu statistik otomatis: Total Records, Nilai Rata-rata, Rentang Min/Max.
+* **1-Click Export CSV**: Format tabel standar untuk Microsoft Excel dan Google Sheets.
+* **1-Click Export JSON**: Format data untuk pengolahan Python Pandas / Data Science.
+
+### 6. 🧪 Built-in Virtual Hardware Simulator
+* Papan sirkuit virtual di dalam browser untuk menguji sensor suhu (DHT22), tekanan, dan tombol relay tanpa perlu perangkat fisik di awal.
+
+### 7. 💻 Interactive Firmware Generator & SDK
+* Generator kode otomatis siap pakai dengan token yang tertanam langsung untuk **ESP32 (Arduino C++)**, **Raspberry Pi (Python)**, dan **ESP32 (MicroPython)**.
+
+### 8. ⚙️ Visual Rule Engine & Automations
+* Logika otomasi: **WHEN** (ambang batas sensor terlampaui) ➡️ **THEN** (kirim notifikasi Telegram/Email atau matikan relay otomatis).
+
+### 9. 📖 OpenAPI 3.1 REST Docs & MQTT Playground
+* Dokumentasi REST API interaktif dengan live test execution, generator perintah `cURL`, dan referensi topik MQTT.
+
+---
+
+## ⚡ Panduan Instalasi & Menjalankan Cepat
+
+### Prasyarat:
+* **Node.js** v18+ dan **npm** v9+
+* **Python** v3.10+ (opsional, untuk menjalankan gateway lokal)
+
+### 1. Clone Repository
 ```powershell
-cd "d:\PROJECT PYTHON\IOT_HUB"
+git clone https://github.com/fadli1008/IOT_HUB_PRO.git
+cd IOT_HUB_PRO
+```
+
+### 2. Instalasi Dependensi Frontend
+```powershell
 npm install
 ```
 
-### 2. Menjalankan Development Server
+### 3. Jalankan Web Dashboard
 ```powershell
 npm run dev
 ```
-Akses di browser pada: **`http://localhost:5173/`**
+Buka browser Anda di: **`http://localhost:5173/`**
 
-### 3. Production Build
+### 4. Build untuk Production (Opsional)
 ```powershell
 npm run build
 ```
 
 ---
 
-## 🌟 Fitur-Fitur Utama
+## 🔌 Integrasi ESP32 Fisik ke Localhost
 
-1. **Gated Public Landing Page & Auth Flow**:
-   * Formulir Sign-Up & Sign-In dengan verifikasi Email OTP 6-Digit.
-   * Onboarding Wizard 3 langkah dengan aktivasi otomatis **Free Lifetime Tier (5 Perangkat)**.
-2. **WYSIWYG Drag & Drop Dashboard Builder**:
-   * Canvas grid 12/24 kolom responsif dengan *magnetic snap-to-grid*.
-   * **Property Inspector** untuk data binding Virtual Pin (`V0`–`V255`), rumus matematika kustom (`value * 1.8 + 32`), pewarnaan ambang batas (*threshold alerts*), dan tema kartu.
-   * Katalog widget lengkap: Radial Gauges, Time-Series Charts multi-axis, Toggle Relays, PWM Sliders, Liquid Tanks, SCADA HMI Schematics, GPS Fleet Maps, RGB Color Pickers, dan Serial Console.
-3. **Device Fleet & Digital Twin (Device Shadow)**:
-   * Generator `DEVICE_TOKEN`, status koneksi real-time, dan inspektor sinkronisasi status *Desired vs Reported*.
-4. **Built-in Virtual Hardware Simulator**:
-   * Papan sirkuit virtual di dalam browser untuk menguji respon sensor & saklar secara instan tanpa perlu hardware fisik.
-5. **Interactive Firmware SDK Generator**:
-   * Pembuat kode otomatis untuk **ESP32 (Arduino C++)**, **Raspberry Pi (Python Asyncio)**, dan **ESP32 (MicroPython)**.
-6. **Visual Rule Engine**:
-   * Otomasi pemicu ambang batas (*Threshold Trigger* ➡️ *Telegram/Email Alert* / *Relay Shutdown*).
-7. **API Documentation & MQTT Topic Explorer**:
-   * Dokumentasi OpenAPI 3.1 interaktif dengan tombol eksekusi live dan generator perintah **cURL**.
+Jika Anda memiliki board ESP32 fisik dan ingin mengirimkan data nyata ke dashboard yang berjalan di localhost:
+
+### Langkah 1: Jalankan Local Gateway Bridge
+Buka terminal baru di folder proyek dan jalankan:
+```powershell
+python server.py
+```
+*(Gateway server akan aktif di `http://0.0.0.0:8000`)*.
+
+### Langkah 2: Cek IP Laptop Anda
+Ketik `ipconfig` di PowerShell untuk melihat IPv4 laptop Anda (contoh: `192.168.100.123`).
+
+### Langkah 3: Upload Sketch ke ESP32 (Arduino IDE)
+```cpp
+#include <WiFi.h>
+#include <HTTPClient.h>
+#include <ArduinoJson.h>
+
+const char* WIFI_SSID     = "NAMA_WIFI_ANDA";
+const char* WIFI_PASSWORD = "PASSWORD_WIFI_ANDA";
+const char* SERVER_URL    = "http://192.168.100.123:8000/api/v1/telemetry"; // Ganti IP Laptop Anda
+const char* DEVICE_TOKEN  = "dev_esp32_boiler_01";
+
+void setup() {
+  Serial.begin(115200);
+  WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+  while (WiFi.status() != WL_CONNECTED) { delay(500); Serial.print("."); }
+  Serial.println("\n[OK] Wi-Fi Terhubung!");
+}
+
+void loop() {
+  if (WiFi.status() == WL_CONNECTED) {
+    HTTPClient http;
+    http.begin(SERVER_URL);
+    http.addHeader("Content-Type", "application/json");
+
+    float suhu = 28.5 + (random(-20, 20) / 10.0);
+    float tekanan = 4.8 + (random(-5, 5) / 10.0);
+
+    StaticJsonDocument<200> doc;
+    doc["token"] = DEVICE_TOKEN;
+    doc["v0"] = suhu;      // Virtual Pin V0
+    doc["v4"] = tekanan;   // Virtual Pin V4
+
+    String payload;
+    serializeJson(doc, payload);
+    http.POST(payload);
+    http.end();
+  }
+  delay(2000);
+}
+```
+*Data dari sensor ESP32 fisik Anda akan langsung muncul dan menggerakkan jarum gauge di web dashboard secara real-time!*
 
 ---
-*Dikembangkan & Dirancang oleh **Fadli** • React 18, Vite, TypeScript & Tailwind CSS • 2026*
+
+## 📊 Ekspor Data Historis & Analitik
+
+1. Buka menu **"History & Export"** pada sidebar kiri aplikasi.
+2. Pilih perangkat target dan rentang waktu (`1h`, `24h`, `7d`, `30d`).
+3. Klik tombol hijau **`Export CSV (Excel)`** untuk mengunduh spreadsheet, atau **`Export JSON`** untuk analisis lanjutan.
+
+---
+
+## 📚 Dokumen dan Panduan Lengkap
+
+* 📋 **[PRD.md](./PRD.md)** — Dokumen Kebutuhan Produk lengkap (benchmark kompetitor, arsitektur, spesifikasi teknis).
+* 📖 **[USER_MANUAL.md](./USER_MANUAL.md)** — Buku Panduan Pengguna detail (panduan langkah demi langkah dari pendaftaran hingga integrasi PLC dan MicroPython).
+* 🚀 **[Walkthrough Report](./walkthrough.md)** — Rangkuman implementasi dan hasil verifikasi sistem.
+
+---
+
+## 📁 Struktur Direktori Proyek
+
+```
+IOT_HUB/
+├── src/
+│   ├── components/
+│   │   ├── analytics/        # Historical Data & CSV/JSON Export Center
+│   │   ├── api-docs/         # OpenAPI REST & MQTT Playground
+│   │   ├── dashboard/        # Drag & Drop Grid Canvas, Header, Inspector & Toolbox
+│   │   ├── devices/          # Device Fleet Manager & Digital Twin Shadow
+│   │   ├── firmware/         # Interactive Firmware Code Generator
+│   │   ├── landing/          # Public Landing Page, Auth Modal & Onboarding Wizard
+│   │   ├── layout/           # Sidebar Navigation & Layout Shell
+│   │   ├── rules/            # Visual Rule Engine & Automations
+│   │   ├── simulator/        # Virtual Hardware Board Simulator
+│   │   └── widgets/          # Gauge, Chart, SCADA, Map, Tank, Switch, Slider, RGB
+│   ├── context/              # Auth, Device, Dashboard & Telemetry State Providers
+│   ├── types/                # TypeScript Interfaces (Device, Telemetry, Rules, Auth)
+│   └── utils/                # Mock Data, Formatters & LocalStorage Helpers
+├── server.py                 # Local Python Backend Gateway & Telemetry Bridge
+├── PRD.md                    # Product Requirements Document
+├── USER_MANUAL.md            # Comprehensive User Manual
+├── README.md                 # Project Overview & Quickstart Guide
+├── package.json              # Dependencies & Scripts
+├── tailwind.config.js        # Industrial Dark Theme Styling Tokens
+└── vite.config.ts            # Vite Bundler Configuration
+```
+
+---
+
+<div align="center">
+
+**Dikembangkan dan Dirancang oleh [Fadli](https://github.com/fadli1008)**  
+*Dibuat dengan React 18, Vite, TypeScript & Tailwind CSS • 2026*
+
+</div>
