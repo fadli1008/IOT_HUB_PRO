@@ -8,6 +8,7 @@ import { DeviceList } from './components/devices/DeviceList';
 import { VirtualDeviceSimulator } from './components/simulator/VirtualDeviceSimulator';
 import { FirmwareGenerator } from './components/firmware/FirmwareGenerator';
 import { RuleEngine } from './components/rules/RuleEngine';
+import { HistoricalExportView } from './components/analytics/HistoricalExportView';
 import { ApiPlayground } from './components/api-docs/ApiPlayground';
 
 export const App: React.FC = () => {
@@ -35,6 +36,7 @@ export const App: React.FC = () => {
         {activeTab === 'simulator' && <VirtualDeviceSimulator />}
         {activeTab === 'firmware' && <FirmwareGenerator />}
         {activeTab === 'rules' && <RuleEngine />}
+        {activeTab === 'analytics' && <HistoricalExportView />}
         {activeTab === 'api_docs' && <ApiPlayground />}
       </main>
     </div>

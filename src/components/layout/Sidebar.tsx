@@ -12,10 +12,11 @@ import {
   Settings,
   LogOut,
   Sparkles,
-  Building
+  Building,
+  FileSpreadsheet
 } from 'lucide-react';
 
-export type ActiveTab = 'dashboard' | 'devices' | 'simulator' | 'firmware' | 'rules' | 'api_docs';
+export type ActiveTab = 'dashboard' | 'devices' | 'simulator' | 'firmware' | 'rules' | 'analytics' | 'api_docs';
 
 interface SidebarProps {
   activeTab: ActiveTab;
@@ -34,6 +35,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => 
     { id: 'simulator', label: 'Virtual Hardware', icon: Zap },
     { id: 'firmware', label: 'Firmware SDK', icon: Code2 },
     { id: 'rules', label: 'Rule Engine', icon: Sliders },
+    { id: 'analytics', label: 'History & Export', icon: FileSpreadsheet },
     { id: 'api_docs', label: 'API & MQTT Docs', icon: Terminal },
   ];
 

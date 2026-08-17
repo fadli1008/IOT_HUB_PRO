@@ -1,6 +1,7 @@
 import React from 'react';
 import { WidgetConfig } from '../../types/dashboard';
 import { useTelemetry } from '../../context/TelemetryContext';
+import { Download } from 'lucide-react';
 
 interface LineChartWidgetProps {
   config: WidgetConfig;
@@ -74,6 +75,23 @@ export const LineChartWidget: React.FC<LineChartWidgetProps> = ({ config }) => {
           )}
         </div>
         <div className="flex items-center space-x-2 text-[10px] text-gray-500 font-mono">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              const headers = 'Timestamp,Pin,Value\n';
+              const rows = points1.map(p => `"${new Date(p.timestamp).toISOString()}",${config.pin},${p.value}`).join('\n');
+              const blob = new Blob([headers + rows], { type: 'text/csv' });
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement('a');
+              a.href = url;
+              a.download = `chart_${config.pin}_${Date.now()}.csv`;
+              a.click();
+            }}
+            className="p-1 hover:bg-gray-800 rounded text-gray-400 hover:text-emerald-400 transition"
+            title="Quick Export CSV"
+          >
+            <Download className="w-3.5 h-3.5" />
+          </button>
           <span className="bg-gray-800/80 px-2 py-0.5 rounded border border-gray-700">Live (1s)</span>
           <span>Min: {minVal.toFixed(1)}</span>
           <span>Max: {maxVal.toFixed(1)}</span>
