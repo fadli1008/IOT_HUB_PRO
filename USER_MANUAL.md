@@ -103,8 +103,8 @@ Platform IoT Hub menyediakan generator kode otomatis di menu **"Firmware SDK"**.
 
 ```
 ┌────────────────┐      Wi-Fi / Internet      ┌─────────────────────┐
-│  ESP32 DevKit  │ ─────────────────────────▶ │ IoT Hub Cloud       │
-│  + Sensor DHT  │    MQTTS Port :8883        │ (mqtt.iothub.io)    │
+│  ESP32 DevKit  │ ─────────────────────────▶ │ Broker MQTT Global  │
+│  + Sensor DHT  │      Port :1883            │ (broker.emqx.io)    │
 └────────────────┘                            └─────────────────────┘
 ```
 
@@ -125,7 +125,6 @@ Pastikan Anda telah menginstal library berikut melalui Library Manager di Arduin
 
 ```cpp
 #include <WiFi.h>
-#include <WiFiClientSecure.h>
 #include <PubSubClient.h>
 #include <ArduinoJson.h>
 #include "DHT.h"
@@ -134,8 +133,9 @@ Pastikan Anda telah menginstal library berikut melalui Library Manager di Arduin
 const char* WIFI_SSID     = "NAMA_WIFI_ANDA";
 const char* WIFI_PASSWORD = "PASSWORD_WIFI_ANDA";
 
-const char* IOTHUB_BROKER = "mqtt.iothub.io";
-const int   IOTHUB_PORT   = 8883;
+// Broker MQTT Global Publik & Gratis Aktif
+const char* IOTHUB_BROKER = "broker.emqx.io";
+const int   IOTHUB_PORT   = 1883;
 const char* DEVICE_TOKEN  = "MASUKKAN_DEVICE_TOKEN_ANDA_DISINI";
 
 #define DHT_PIN       4

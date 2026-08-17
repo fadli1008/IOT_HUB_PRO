@@ -46,12 +46,13 @@ export const FirmwareGenerator: React.FC = () => {
 const char* WIFI_SSID     = "${wifiSsid}";
 const char* WIFI_PASSWORD = "${wifiPass}";
 
-const char* IOTHUB_BROKER = "mqtt.iothub.io";
-const int   IOTHUB_PORT   = 8883;
+// Broker MQTT Cloud Global (Publik & Gratis Aktif)
+const char* IOTHUB_BROKER = "broker.emqx.io";
+const int   IOTHUB_PORT   = 1883; // Port standar MQTT (atau 8883 dengan TLS)
 const char* DEVICE_TOKEN  = "${token}";
 
-WiFiClientSecure tlsClient;
-PubSubClient mqttClient(tlsClient);
+WiFiClient espClient;
+PubSubClient mqttClient(espClient);
 
 unsigned long lastTelemetryTime = 0;
 const unsigned long TELEMETRY_INTERVAL = 2000; // Kirim data tiap 2 detik
@@ -169,8 +170,8 @@ from paho.mqtt import client as mqtt_client
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 
-BROKER_HOST  = "mqtt.iothub.io"
-BROKER_PORT  = 8883
+BROKER_HOST  = "broker.emqx.io"
+BROKER_PORT  = 1883
 DEVICE_TOKEN = "${token}"
 
 TOPIC_TELEMETRY = f"iothub/v1/{DEVICE_TOKEN}/telemetry"
@@ -181,14 +182,13 @@ class EdgeClient:
     def __init__(self):
         self.client = mqtt_client.Client(mqtt_client.CallbackAPIVersion.VERSION2, f"rpi_{DEVICE_TOKEN[:8]}")
         self.client.username_pw_set(DEVICE_TOKEN, "")
-        self.client.tls_set()
         self.client.on_connect = self._on_connect
         self.client.on_message = self._on_message
         self.client.will_set(TOPIC_STATUS, json.dumps({"state": "offline"}), qos=1, retain=True)
 
     def _on_connect(self, client, userdata, flags, rc, properties=None):
         if rc == 0:
-            logging.info("[IoT Hub] Terhubung ke Broker Cloud!")
+            logging.info("[IoT Hub] Terhubung ke Broker Cloud (broker.emqx.io)!")
             client.publish(TOPIC_STATUS, json.dumps({"state": "online"}), qos=1, retain=True)
             client.subscribe(TOPIC_COMMAND, qos=1)
 
@@ -228,7 +228,7 @@ from umqtt.simple import MQTTClient
 WIFI_SSID = "${wifiSsid}"
 WIFI_PASS = "${wifiPass}"
 DEVICE_TOKEN = "${token}"
-BROKER = "mqtt.iothub.io"
+BROKER = "broker.emqx.io"
 
 wlan = network.WLAN(network.STA_IF)
 wlan.active(True)
