@@ -43,6 +43,21 @@ const DEFAULT_ORG: Organization = {
 const INITIAL_SUPER_ADMIN: User = {
   id: 'usr_super_admin_fadli',
   name: 'Muhamad Fadli',
+  email: 'muhamadfadli10.mf@gmail.com',
+  password: 'admin123',
+  avatarUrl: 'https://avatars.githubusercontent.com/u/fadli1008',
+  role: 'owner',
+  isEmailVerified: true,
+  createdAt: '2026-08-01T00:00:00Z',
+  status: 'active',
+  deviceLimit: 500,
+  devicesCount: 8,
+  lastLogin: 'Just now'
+};
+
+const INITIAL_ADMIN_ALIAS: User = {
+  id: 'usr_admin_alias',
+  name: 'Super Admin',
   email: 'admin@iothub.local',
   password: 'admin123',
   avatarUrl: 'https://avatars.githubusercontent.com/u/fadli1008',
@@ -57,6 +72,7 @@ const INITIAL_SUPER_ADMIN: User = {
 
 const INITIAL_USERS: User[] = [
   INITIAL_SUPER_ADMIN,
+  INITIAL_ADMIN_ALIAS,
   {
     id: 'usr_sarah_02',
     name: 'Sarah Connor',
