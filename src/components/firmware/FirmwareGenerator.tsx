@@ -10,13 +10,16 @@ import {
   Cpu,
   Wifi,
   Sparkles,
-  Layers
+  Layers,
+  Radio,
+  Globe
 } from 'lucide-react';
 
 export const FirmwareGenerator: React.FC = () => {
   const { devices } = useDevices();
   const [selectedDeviceId, setSelectedDeviceId] = useState<string>(devices[0]?.id || '');
   const [selectedPlatform, setSelectedPlatform] = useState<HardwarePlatform>('esp32');
+  const [protocol, setProtocol] = useState<'mqtt' | 'http'>('mqtt');
   const [wifiSsid, setWifiSsid] = useState('MyHome_WiFi');
   const [wifiPass, setWifiPass] = useState('SuperSecretPassword');
   const [isCopied, setIsCopied] = useState(false);
@@ -25,6 +28,188 @@ export const FirmwareGenerator: React.FC = () => {
   const token = currentDevice ? currentDevice.token : 'YOUR_DEVICE_TOKEN';
 
   const generateCode = (): { filename: string; code: string } => {
+    // ==========================================
+    // 1. HTTP REST API GENERATION
+    // ==========================================
+    if (protocol === 'http') {
+      if (selectedPlatform === 'esp32' || selectedPlatform === 'esp8266' || selectedPlatform === 'arduino') {
+        return {
+          filename: `${currentDevice?.name.toLowerCase().replace(/\s+/g, '_')}_http_client.ino`,
+          code: `/*
+ * ============================================================================
+ * Project      : IoT Hub ESP32 HTTP REST Client
+ * Developer    : Fadli (IoT Hub Lead Architect)
+ * Protocol     : HTTP REST Ingestion (No MQTT required!)
+ * Device Name  : ${currentDevice?.name}
+ * Generated At : ${new Date().toISOString()}
+ * ============================================================================
+ */
+
+#include <WiFi.h>
+#include <HTTPClient.h>
+#include <ArduinoJson.h>
+
+// ========== 1. KREDENSIAL WI-FI ==========
+const char* WIFI_SSID     = "${wifiSsid}";
+const char* WIFI_PASSWORD = "${wifiPass}";
+
+// ========== 2. ENDPOINT API IOT HUB ==========
+// Gunakan URL Cloud atau IP Localhost Anda (misal: http://192.168.1.100:8000/api/v1/telemetry)
+const char* IOTHUB_HTTP_ENDPOINT = "http://localhost:8000/api/v1/telemetry";
+const char* DEVICE_TOKEN         = "${token}";
+
+#define RELAY_PIN 2
+
+unsigned long lastSend = 0;
+const unsigned long SEND_INTERVAL = 2000; // Kirim tiap 2 detik
+
+void setup() {
+  Serial.begin(115200);
+  pinMode(RELAY_PIN, OUTPUT);
+
+  // Hubungkan ke Wi-Fi
+  Serial.print("[IoT Hub] Menghubungkan ke Wi-Fi...");
+  WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+  Serial.println("\\n[OK] Wi-Fi Terhubung!");
+  Serial.print("Alamat IP ESP32: ");
+  Serial.println(WiFi.localIP());
+}
+
+void loop() {
+  if (WiFi.status() == WL_CONNECTED) {
+    unsigned long now = millis();
+    if (now - lastSend >= SEND_INTERVAL) {
+      lastSend = now;
+
+      // 1. Baca Sensor Fisik (atau Simulasi)
+      float temperature = 28.5 + (random(-30, 30) / 10.0);
+      float pressure    = 4.8 + (random(-10, 10) / 10.0);
+
+      // 2. Format JSON Payload
+      StaticJsonDocument<256> doc;
+      doc["token"] = DEVICE_TOKEN;
+      doc["v0"]    = temperature;      // Virtual Pin V0 (Suhu)
+      doc["v4"]    = pressure;         // Virtual Pin V4 (Tekanan)
+      doc["rssi"]  = WiFi.RSSI();
+
+      String jsonPayload;
+      serializeJson(doc, jsonPayload);
+
+      // 3. Kirim via HTTP POST
+      HTTPClient http;
+      http.begin(IOTHUB_HTTP_ENDPOINT);
+      http.addHeader("Content-Type", "application/json");
+      http.addHeader("Authorization", String("Bearer ") + DEVICE_TOKEN);
+
+      int httpResponseCode = http.POST(jsonPayload);
+
+      if (httpResponseCode > 0) {
+        String response = http.getString();
+        Serial.printf("[HTTP POST OK] Kode: %d | Data: %s\\n", httpResponseCode, jsonPayload.c_str());
+      } else {
+        Serial.printf("[HTTP ERROR] Kode: %d | Pesan: %s\\n", httpResponseCode, http.errorToString(httpResponseCode).c_str());
+      }
+
+      http.end();
+    }
+  } else {
+    Serial.println("[IoT Hub] Wi-Fi terputus. Mencoba reconnect...");
+    WiFi.reconnect();
+    delay(3000);
+  }
+}`
+        };
+      } else if (selectedPlatform === 'raspberry_pi') {
+        return {
+          filename: `${currentDevice?.name.toLowerCase().replace(/\s+/g, '_')}_http.py`,
+          code: `"""
+============================================================================
+Project      : IoT Hub Edge Python HTTP Client
+Developer    : Fadli (IoT Hub Lead Architect)
+Protocol     : HTTP REST Ingestion
+Device Name  : ${currentDevice?.name}
+Target Board : Raspberry Pi 4 / Linux SBC
+============================================================================
+"""
+
+import time
+import requests
+import psutil
+
+IOTHUB_ENDPOINT = "http://localhost:8000/api/v1/telemetry"
+DEVICE_TOKEN    = "${token}"
+
+def main():
+    print(f"[IoT Hub] Memulai pengiriman data HTTP ke: {IOTHUB_ENDPOINT}")
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": f"Bearer {DEVICE_TOKEN}"
+    }
+
+    while True:
+        cpu = psutil.cpu_percent()
+        ram = psutil.virtual_memory().percent
+
+        payload = {
+            "token": DEVICE_TOKEN,
+            "v0": cpu,
+            "v1": ram
+        }
+
+        try:
+            res = requests.post(IOTHUB_ENDPOINT, json=payload, headers=headers, timeout=5)
+            print(f"[HTTP {res.status_code}] Data terkirim -> CPU: {cpu}% | RAM: {ram}%")
+        except Exception as e:
+            print(f"[Error HTTP] {e}")
+
+        time.sleep(2)
+
+if __name__ == "__main__":
+    main()`
+        };
+      } else {
+        return {
+          filename: `${currentDevice?.name.toLowerCase().replace(/\s+/g, '_')}_http_mpy.py`,
+          code: `# MicroPython HTTP Client for ${currentDevice?.name}
+# Developed by: Fadli (IoT Hub Lead Architect)
+import time, ujson, urequests, network, machine
+
+WIFI_SSID = "${wifiSsid}"
+WIFI_PASS = "${wifiPass}"
+DEVICE_TOKEN = "${token}"
+ENDPOINT = "http://192.168.100.123:8000/api/v1/telemetry"
+
+wlan = network.WLAN(network.STA_IF)
+wlan.active(True)
+wlan.connect(WIFI_SSID, WIFI_PASS)
+while not wlan.isconnected():
+    time.sleep(0.5)
+print("[OK] WiFi Terhubung!")
+
+adc = machine.ADC(machine.Pin(34))
+headers = {"Content-Type": "application/json", "Authorization": "Bearer " + DEVICE_TOKEN}
+
+while True:
+    val = adc.read()
+    payload = ujson.dumps({"token": DEVICE_TOKEN, "v0": val})
+    try:
+        res = urequests.post(ENDPOINT, data=payload, headers=headers)
+        print("HTTP Status:", res.status_code)
+        res.close()
+    except Exception as e:
+        print("HTTP Error:", e)
+    time.sleep(2)`
+        };
+      }
+    }
+
+    // ==========================================
+    // 2. MQTT CLIENT GENERATION (DEFAULT)
+    // ==========================================
     if (selectedPlatform === 'esp32' || selectedPlatform === 'esp8266' || selectedPlatform === 'arduino') {
       return {
         filename: `${currentDevice?.name.toLowerCase().replace(/\s+/g, '_')}_esp32.ino`,
@@ -32,13 +217,13 @@ export const FirmwareGenerator: React.FC = () => {
  * ============================================================================
  * Project      : IoT Hub ESP32 Production Client
  * Developer    : Fadli (IoT Hub Lead Architect)
+ * Protocol     : MQTT Standard (broker.emqx.io)
  * Device Name  : ${currentDevice?.name}
  * Generated At : ${new Date().toISOString()}
  * ============================================================================
  */
 
 #include <WiFi.h>
-#include <WiFiClientSecure.h>
 #include <PubSubClient.h>
 #include <ArduinoJson.h>
 
@@ -48,7 +233,7 @@ const char* WIFI_PASSWORD = "${wifiPass}";
 
 // Broker MQTT Cloud Global (Publik & Gratis Aktif)
 const char* IOTHUB_BROKER = "broker.emqx.io";
-const int   IOTHUB_PORT   = 1883; // Port standar MQTT (atau 8883 dengan TLS)
+const int   IOTHUB_PORT   = 1883;
 const char* DEVICE_TOKEN  = "${token}";
 
 WiFiClient espClient;
@@ -86,14 +271,14 @@ void handleCloudCommand(char* topic, byte* payload, unsigned int length) {
 // ========== REKONEKSI MQTT AUTO-BACKOFF ==========
 void connectToIoTHub() {
   while (!mqttClient.connected()) {
-    Serial.print(F("[IoT Hub] Menghubungkan ke Broker MQTT..."));
+    Serial.print(F("[IoT Hub] Menghubungkan ke Broker MQTT (broker.emqx.io)..."));
     
     String lwtTopic = "iothub/v1/" + String(DEVICE_TOKEN) + "/status";
     String subTopic = "iothub/v1/" + String(DEVICE_TOKEN) + "/command";
     String clientId = "ESP32_" + String(random(0xffff), HEX);
 
     if (mqttClient.connect(clientId.c_str(), DEVICE_TOKEN, "", lwtTopic.c_str(), 1, true, "{\\"state\\":\\"offline\\"}")) {
-      Serial.println(F(" BERHASIL!"));
+      Serial.println(F(" BERHASIL TERHUBUNG!"));
       mqttClient.publish(lwtTopic.c_str(), "{\\"state\\":\\"online\\"}", true);
       mqttClient.subscribe(subTopic.c_str(), 1);
     } else {
@@ -116,7 +301,6 @@ void setup() {
   }
   Serial.println(F("\\nWiFi Terhubung!"));
 
-  tlsClient.setInsecure(); // Dev mode (atau pasang CA cert)
   mqttClient.setServer(IOTHUB_BROKER, IOTHUB_PORT);
   mqttClient.setCallback(handleCloudCommand);
 }
@@ -238,7 +422,7 @@ while not wlan.isconnected():
 
 client = MQTTClient("esp32_mpy", BROKER, port=1883, user=DEVICE_TOKEN, password="")
 client.connect()
-print("[IoT Hub] MicroPython Connected!")
+print("[IoT Hub] MicroPython Connected to broker.emqx.io!")
 
 while True:
     client.publish(b"iothub/v1/" + DEVICE_TOKEN + b"/telemetry", ujson.dumps({"v0": 29.4}))
@@ -275,8 +459,37 @@ while True:
           </span>
         </div>
         <p className="text-xs text-gray-400 mt-1">
-          Generate plug-and-play source code tailored for your microcontrollers with pre-configured Virtual Pins and Tokens
+          Generate plug-and-play source code tailored for your microcontrollers with pre-configured Virtual Pins, Tokens, and Protocol Selection
         </p>
+      </div>
+
+      {/* Protocol Selection Pills */}
+      <div className="flex items-center space-x-3">
+        <span className="text-xs text-gray-400 font-mono">Select Communication Protocol:</span>
+        <div className="flex bg-gray-900 border border-gray-800 p-1 rounded-2xl">
+          <button
+            onClick={() => setProtocol('mqtt')}
+            className={`flex items-center space-x-2 px-4 py-2 rounded-xl text-xs font-bold font-mono transition ${
+              protocol === 'mqtt'
+                ? 'bg-brand-500 text-black shadow-md glow-cyan'
+                : 'text-gray-400 hover:text-white'
+            }`}
+          >
+            <Radio className="w-4 h-4" />
+            <span>MQTT (Real-time Pub/Sub)</span>
+          </button>
+          <button
+            onClick={() => setProtocol('http')}
+            className={`flex items-center space-x-2 px-4 py-2 rounded-xl text-xs font-bold font-mono transition ${
+              protocol === 'http'
+                ? 'bg-emerald-500 text-black shadow-md glow-green'
+                : 'text-gray-400 hover:text-white'
+            }`}
+          >
+            <Globe className="w-4 h-4" />
+            <span>HTTP REST API (Simple POST)</span>
+          </button>
+        </div>
       </div>
 
       {/* Control Configuration Bar */}
@@ -304,7 +517,7 @@ while True:
             className="w-full bg-gray-900 border border-gray-700 text-gray-200 text-xs rounded-xl px-3 py-2 focus:outline-none focus:border-brand-500 font-mono"
           >
             <option value="esp32">ESP32 (Arduino C++)</option>
-            <option value="raspberry_pi">Raspberry Pi (Python Asyncio)</option>
+            <option value="raspberry_pi">Raspberry Pi (Python)</option>
             <option value="stm32">MicroPython (ESP32/RP2040)</option>
           </select>
         </div>
@@ -339,6 +552,11 @@ while True:
           <div className="flex items-center space-x-2 font-mono text-gray-300">
             <Code2 className="w-4 h-4 text-brand-400" />
             <span className="font-bold">{generated.filename}</span>
+            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase ${
+              protocol === 'mqtt' ? 'bg-brand-500/20 text-brand-400 border border-brand-500/30' : 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+            }`}>
+              {protocol.toUpperCase()} Client
+            </span>
           </div>
 
           <div className="flex items-center space-x-2">

@@ -234,6 +234,59 @@ void loop() {
 
 ---
 
+### A.2 Panduan ESP32 Menggunakan HTTP REST API (Simple POST Tanpa Library MQTT)
+
+Jika Anda ingin metode paling sederhana **tanpa perlu menginstal library MQTT**, Anda cukup menggunakan library standar bawaan ESP32: **`HTTPClient.h`** dan **`WiFi.h`**.
+
+```cpp
+#include <WiFi.h>
+#include <HTTPClient.h>
+#include <ArduinoJson.h>
+
+const char* WIFI_SSID     = "NAMA_WIFI_ANDA";
+const char* WIFI_PASSWORD = "PASSWORD_WIFI_ANDA";
+
+// Endpoint API IoT Hub (Bisa IP Laptop atau Cloud)
+const char* API_URL       = "http://192.168.100.123:8000/api/v1/telemetry";
+const char* DEVICE_TOKEN  = "dev_esp32_boiler_01";
+
+void setup() {
+  Serial.begin(115200);
+  WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+  while (WiFi.status() != WL_CONNECTED) { delay(500); Serial.print("."); }
+  Serial.println("\n[OK] Wi-Fi Terhubung!");
+}
+
+void loop() {
+  if (WiFi.status() == WL_CONNECTED) {
+    HTTPClient http;
+    http.begin(API_URL);
+    http.addHeader("Content-Type", "application/json");
+
+    // Baca sensor suhu
+    float suhu = 29.4;
+    float tekanan = 4.8;
+
+    StaticJsonDocument<200> doc;
+    doc["token"] = DEVICE_TOKEN;
+    doc["v0"]    = suhu;      // Virtual Pin V0
+    doc["v4"]    = tekanan;   // Virtual Pin V4
+
+    String jsonPayload;
+    serializeJson(doc, jsonPayload);
+
+    int httpCode = http.POST(jsonPayload);
+    if (httpCode > 0) {
+      Serial.printf("[HTTP %d] Data terkirim: %s\n", httpCode, jsonPayload.c_str());
+    }
+    http.end();
+  }
+  delay(2000); // Kirim tiap 2 detik
+}
+```
+
+---
+
 ### B. Panduan Raspberry Pi / Linux SBC (Python)
 
 Cocok untuk gateway industri, mini PC, atau Raspberry Pi yang membaca metrik CPU/RAM atau sensor Modbus RS485.
